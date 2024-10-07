@@ -212,11 +212,11 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
 app.get('/',(req,res)=>{
     console.log(`[${index}] port is working`)
     index++
-    res.send('hello sagar')
+    res.send('endpoint is working!')
 })
 
 app.get('/getPollingStation',authenticateToken,async (req,res)=>{
-    // console.log("getting ps")
+    console.log("getting ps")
     try{
         const query = `        
                     SELECT
@@ -340,6 +340,7 @@ app.post('/registerTaluka',authenticateToken,async (req,res)=>{
 
 
 app.post('/login', async (req, res) => {
+    console.log("login initiated")
     const { name, password } = req.body;
 
     if (!name || !password) {

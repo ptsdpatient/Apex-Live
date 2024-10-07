@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,7 +32,9 @@ class _UserPageState extends State<UserPage> {
   String? selectedPollingStationId;
   String? pollingStationId;
   bool isDropdownOpen = false;
-  List<String> pollingStationIdList=['Select polling station'];
+  List<String> pollingStationIdList=['Select polling station','Nigga!!!'];
+
+
 
 
 
@@ -76,7 +79,6 @@ class _UserPageState extends State<UserPage> {
     }
   }
 
-
   Future<void> authenticateToken() async {
     String? token = await storage.read(key: 'authToken');
 
@@ -99,7 +101,6 @@ class _UserPageState extends State<UserPage> {
           isAdmin = responseData['isAdmin'];
         });
 
-        print('===========================$isAdmin=============================');
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
         removeToken();
@@ -112,42 +113,8 @@ class _UserPageState extends State<UserPage> {
 
 
 
-  Future<void> createEmployee(String name, String password,String mobile) async {
-    final url = Uri.parse('${apiKey}login');
 
-    final body = jsonEncode({
-      'name': name,
-      'password': password,
-    });
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-
-        if (responseData.containsKey('token')) {
-          String token = responseData['token'];
-          await saveToken(token);
-
-          print('Login successful: ${response.body}');
-          Navigator.pushNamed(context, '/home');
-        } else {
-          print('Token not found in response');
-        }
-      } else {
-        print('Login failed: ${response.statusCode} - ${response.body}');
-      }
-    } catch (error) {
-      print('Error occurred: $error');
-    }
-  }
 
 
   Future<void> registerCamera(modelNumber,pollingStation) async{
@@ -215,16 +182,15 @@ class _UserPageState extends State<UserPage> {
               automaticallyImplyLeading: false,
               floating: true,
               pinned:false,
-              title: Text(bottomNavIndex==0?"Camera":"Employees"),
-            )
+              title: Text("nigga"),
+            ),
+
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: isAdmin? Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
+        floatingActionButton: isAdmin?
 
-            FloatingActionButton(
+            FloatingActionButton.large(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               onPressed: () {
@@ -259,25 +225,28 @@ class _UserPageState extends State<UserPage> {
                                           child: Column(
                                             children: [
 
-                                              Row(
+                                              const Row(
                                                 children: [
                                                   Padding(
-                                                    padding:EdgeInsets.symmetric(horizontal: 35,vertical: 15),
-                                                    child: Text("Polling Station :"),
+                                                    padding:EdgeInsets.only(left: 35,top: 30),
+                                                    child: Text("Polling Station : "),
                                                   )
                                                 ],
                                               ),
                                               Padding(
-                                                padding:EdgeInsets.only(left: 40,right:40,top: 3,bottom: 20),
+                                                padding:const EdgeInsets.only(left: 25,right:25,bottom: 20,top:15),
                                                 child:
-                                                CustomDropdown<String>(
-                                                  hintText: 'Select Polling station',
+                                                CustomDropdown<String>.search(
+                                                  overlayHeight: 400,
+                                                  hintText: 'Select Polling Staiton',
                                                   items: pollingStationIdList,
-                                                  initialItem: pollingStationIdList[0],
+                                                  excludeSelected: false,
                                                   onChanged: (value) {
-                                                    pollingStationId=value;
+                                                      setState(() {
+                                                        pollingStationId=value;
+                                                      });
                                                   },
-                                                ),
+                                                )
                                               ),
 
                                               ClipRRect(
@@ -285,18 +254,23 @@ class _UserPageState extends State<UserPage> {
                                                 child: SizedBox(
                                                   height: getHeight(context)*0.4,
                                                   width: getWidth(context)*0.8,
-                                                  child: Expanded(
-                                                    child: MobileScanner(
-                                                      onDetect: (BarcodeCapture barcodeCapture) {
-                                                        final String? code = barcodeCapture.barcodes.first.rawValue;
-                                                        if (code != null) {
-                                                          setState(() {
-                                                            serialNumberController.text=code;
-                                                          });
-                                                        }
-                                                      },
-                                                    ),
-                                                  ),
+                                                  child: Flex(
+                                                    direction: Axis.vertical,
+                                                    children: [
+                                                      Expanded(
+                                                        child: MobileScanner(
+                                                          onDetect: (BarcodeCapture barcodeCapture) {
+                                                            final String? code = barcodeCapture.barcodes.first.rawValue;
+                                                            if (code != null) {
+                                                              setState(() {
+                                                                serialNumberController.text=code;
+                                                              });
+                                                            }
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
                                                 ),
                                               ),
                                               Padding(
@@ -324,7 +298,6 @@ class _UserPageState extends State<UserPage> {
                                 ),
                                 floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
                                 floatingActionButton: FloatingActionButton.large(
-
                                   onPressed: (){
                                     registerCamera(serialNumberController.text,pollingStationId);
                                   },
@@ -338,139 +311,25 @@ class _UserPageState extends State<UserPage> {
                         );
                     });
               },
-              child: const Icon(Icons.add_a_photo_sharp),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            FloatingActionButton(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              onPressed: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled:true,
-                    enableDrag: true, // Set to true if you want drag functionality
-                    builder: (BuildContext context){
-                      return
-                        ClipRRect(
-                          child: SizedBox(
-                            height:getHeight(context)*0.8,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Scaffold(
-                                backgroundColor: Colors.grey.withOpacity(0.2),
-                                body: CustomScrollView(
-                                  shrinkWrap: false,
-                                  physics:  const BouncingScrollPhysics(),
-                                  scrollBehavior: const ScrollBehavior(),
-                                  slivers: [
-                                    const SliverAppBar(
-                                      pinned:false,
-                                      floating: true,
-                                      title: Text("Register Employee"),
-                                      automaticallyImplyLeading: false,
-                                      centerTitle: true,
-                                    ),
-                                    SliverToBoxAdapter(
-                                        child: SizedBox(
-                                          height: getHeight(context)*1.5,
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 24, right: 24, top: 25,bottom:10),
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: TextField(
-                                                    controller: serialNumberController,
-                                                    decoration: const InputDecoration(
-                                                      filled: true,
-                                                      fillColor: Colors.white,
-                                                      prefixIcon: Icon(Icons.person),
-                                                      hintText: "full_name",
-                                                      border: InputBorder.none,
-                                                    ),
-                                                    style: const TextStyle(color: Colors.black),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 24, right: 24, top: 10,bottom:10),
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: TextField(
-                                                    controller: serialNumberController,
-                                                    decoration: const InputDecoration(
-                                                      filled: true,
-                                                      fillColor: Colors.white,
-                                                      prefixIcon: Icon(Icons.password),
-                                                      hintText: "password",
-                                                      border: InputBorder.none,
-                                                    ),
-                                                    style: const TextStyle(color: Colors.black),
-                                                  ),
-                                                ),
-                                              ),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 24, right: 24, top: 10,bottom:10),
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: TextField(
-                                                    controller: serialNumberController,
-                                                    decoration: const InputDecoration(
-                                                      filled: true,
-                                                      fillColor: Colors.white,
-                                                      prefixIcon: Icon(Icons.phone),
-                                                      hintText: "mobile_number",
-                                                      border: InputBorder.none,
-                                                    ),
-                                                    style: const TextStyle(color: Colors.black),
-                                                  ),
-                                                ),
-                                              ),
-                                              Button(
-                                                  context,
-                                                  getWidth(context)*0.7,
-                                                  "Create Employee",
-                                                      () async {
-                                                    await createEmployee("name","password","mobile");
-                                                  }
-                                              )
-                                            ],
-                                          ),
-                                        )
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                    });
-              },
-              child: const Icon(Icons.person_add_rounded),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-          ],
-        ):Container(),
+              child:const Icon(Icons.add_a_photo,size:45),
+            ) :Container(),
         bottomNavigationBar: BottomNavigationBar(
           elevation: 20,
           showSelectedLabels: true,
           showUnselectedLabels: false,
           currentIndex: bottomNavIndex,
           selectedFontSize: 15,
-          backgroundColor: Colors.white,
+          unselectedIconTheme: const IconThemeData(
+            color:Colors.black45
+          ),
+          // backgroundColor: Colors.white,
           selectedIconTheme: const IconThemeData(
             color:Colors.blue,
           ),
           fixedColor: Colors.blue,
           items: const [
             BottomNavigationBarItem(
-              backgroundColor: Colors.black,
+              // backgroundColor: Colors.green,
               icon: Icon(
                   Icons.video_camera_back_rounded,
                   size:35
@@ -484,6 +343,20 @@ class _UserPageState extends State<UserPage> {
             ),
 
             BottomNavigationBarItem(
+              // backgroundColor: Colors.yellow,
+              icon: Icon(
+                  Icons.how_to_vote_rounded,
+                  size:35
+              ),
+              label: "Polling Station",
+              activeIcon: Icon(
+                  Icons.how_to_vote_rounded,
+                  size:40
+
+              ),
+            ),
+            BottomNavigationBarItem(
+              // backgroundColor: Colors.purpleAccent,
               icon: Icon(
                   Icons.person,
                   size:35
@@ -492,6 +365,20 @@ class _UserPageState extends State<UserPage> {
               activeIcon: Icon(
                   Icons.person,
                   size:40
+              ),
+            ),
+
+            BottomNavigationBarItem(
+              // backgroundColor: Colors.red,
+              icon: Icon(
+                  Icons.location_on_rounded,
+                  size:35
+              ),
+              label: "Taluka",
+              activeIcon: Icon(
+                  Icons.location_on_rounded,
+                  size:40
+
               ),
             ),
           ],
