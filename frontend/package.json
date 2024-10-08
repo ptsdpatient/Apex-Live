@@ -16,6 +16,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"sweetalert2": "^11.14.1"
+		"hls.js": "^1.5.15",
+		"sweetalert2": "^11.14.1",
+		"webrtc-adapter": "^9.0.1"
 	}
 }

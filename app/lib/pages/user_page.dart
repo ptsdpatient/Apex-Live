@@ -41,7 +41,7 @@ class _UserPageState extends State<UserPage> {
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://192.168.1.6:2000/";
+  String apiKey="http://192.168.129.104:2000/";
 
   void fetchInfo(){
     fetchPollingStation();

@@ -2,7 +2,7 @@
     import {onMount} from 'svelte'
     let username = '';
     let password = '';
-    let url='http://192.168.1.6:2000'
+    let url='http://localhost:2000'
 
     async function loginUser() {
         if (!username || !password) {
@@ -49,15 +49,15 @@
     <title>Login Page</title>
 </head>
 
-<body class="w-full h-full  flex flex-row items-center justify-end  bg-white" style="width:100vw;height:100vh;">
+<body class="w-full h-full  flex flex-row items-center justify-center px-10 gap-10  bg-white" style="width:100vw;height:100vh;">
 
-    <div class="w-2/3 h-full flex flex-col ">
-        <img src="icon.jpg" alt="camera" class="w-4/5 mx-right">
+    <div class="w-2/3 p-10 h-full flex flex-col ">
+        <img src="camera.png" alt="camera" class="w-4/5 mx-right">
     </div>
-    <div class=" w-1/3 p-8 space-y-6 bg-gray-200 rounded-lg shadow-xl mr-10">
+    <div class=" w-1/3 p-8 space-y-6 bg-gray-200 rounded-lg shadow-xl">
         <h2 class="text-2xl font-bold text-center text-gray-800">Apex Live</h2>
 
-        <form class="space-y-4">
+        <form class="space-y-4 px-10">
             <div>
                 <label for="username" class="block text-xl font-medium text-gray-700">Username</label>
                 <input bind:value={username} type="username" id="username" name="username" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-500" placeholder="">

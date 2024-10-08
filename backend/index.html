@@ -16,14 +16,14 @@
 
   </div>
   <script>
-    let camera1='HF4G147354',camera2='HF4G149338',camera3='HF4G147345',camera4='HF4G080004'
-    let array=[]
-    let ip='223.185.143.58'//for local network use localhost and for network use router ip 
+    let camera1='HF4G147354',camera2='HF4G149330',camera3='HF4G147345',camera4='HF4G080004'
+    let port=4000
+    let ip='localhost'
     if (Hls.isSupported()) {
 
       var video1 = document.getElementById('video1');
       var hls1 = new Hls();
-      hls1.loadSource(`http://${ip}:8000/live/${camera1}/index.m3u8`);
+      hls1.loadSource(`http://${ip}:${port}/live/${camera1}/index.m3u8`);
       hls1.attachMedia(video1);
       hls1.on(Hls.Events.MANIFEST_PARSED, function() {
         video1.play();
@@ -31,7 +31,7 @@
 
       var video2 = document.getElementById('video2');
       var hls2 = new Hls();
-      hls2.loadSource(`http://${ip}:8000/live/${camera2}/index.m3u8`);
+      hls2.loadSource(`http://${ip}:${port}/live/${camera2}/index.m3u8`);
       hls2.attachMedia(video2);
       hls2.on(Hls.Events.MANIFEST_PARSED, function() {
         video2.play();
@@ -39,7 +39,7 @@
       
       var video3 = document.getElementById('video3');
       var hls3 = new Hls();
-      hls3.loadSource(`http://${ip}:8000/live/${camera3}/index.m3u8`);
+      hls3.loadSource(`http://${ip}:${port}/live/${camera3}/index.m3u8`);
       hls3.attachMedia(video3);
       hls3.on(Hls.Events.MANIFEST_PARSED, function() {
         video3.play();
@@ -47,26 +47,26 @@
 
       var video4 = document.getElementById('video4');
       var hls4 = new Hls();
-      hls4.loadSource(`http://${ip}:8000/live/${camera4}/index.m3u8`);
+      hls4.loadSource(`http://${ip}:${port}/live/${camera4}/index.m3u8`);
       hls4.attachMedia(video4);
       hls4.on(Hls.Events.MANIFEST_PARSED, function() {
         video4.play();
       });
 
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video1.src = `http://${ip}:8000/live/${camera1}/index.m3u8`;
+      video1.src = `http://${ip}:${port}/live/${camera1}/index.m3u8`;
       video1.addEventListener('canplay', function() {
         video1.play();
       });
-      video2.src = `http://${ip}:8000/live/${camera2}/index.m3u8`;
+      video2.src = `http://${ip}:${port}/live/${camera2}/index.m3u8`;
       video2.addEventListener('canplay', function() {
         video2.play();
       });
-      video3.src = `http://${ip}:8000/live/${camera3}/index.m3u8`;
+      video3.src = `http://${ip}:${port}/live/${camera3}/index.m3u8`;
       video3.addEventListener('canplay', function() {
         video3.play();
       });
-      video4.src = `http://${ip}:8000/live/${camera4}/index.m3u8`;
+      video4.src = `http://${ip}:${port}/live/${camera4}/index.m3u8`;
       video4.addEventListener('canplay', function() {
         video4.play();
       });

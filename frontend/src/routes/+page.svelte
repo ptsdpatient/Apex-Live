@@ -1,10 +1,15 @@
+
 <script>
 
     import {onMount} from 'svelte'
+    import Hls from 'hls.js';
 
-    let url='http://192.168.1.6:2000'
 
+    let url='http://localhost:2000'
     let token
+
+    let port=4000
+    let ip='localhost'
 
     const getToken = () =>{
     return localStorage.getItem('authToken')
@@ -15,8 +20,8 @@
     let talukaList=[]
     let cameraIndex=0
     let selectedResolution ={
-        row : "3",
-        col : "4"
+        row : "2",
+        col : "3"
     };
 
     let slideDurationList=[3,7,12,16,20,30,35]
@@ -25,11 +30,12 @@
 
     let resolutionList=[
         {
+            r:"2",
+            c:"3"
+        },
+        {
             r:"3",
             c:"4"
-        },{
-            r:"2",
-            c:"2"
         },{
             r:"4",
             c:"6"
@@ -132,6 +138,40 @@
        }
    }
 
+
+   const initHLS = (serialNumber) => {
+    const video = document.getElementById(`${serialNumber}`);
+    if (!video) {
+        console.error(`Video element not found for serial number: ${serialNumber}`);
+        return;
+    }
+
+    const hls = new Hls();
+    const sourceUrl = `http://${ip}:${port}/live/${serialNumber}/index.m3u8`;
+
+    console.log(`Loading HLS source: ${sourceUrl}`);
+    
+    if (Hls.isSupported()) {
+        hls.loadSource(sourceUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            video.play();
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = sourceUrl;
+        video.addEventListener('canplay', function () {
+            video.play();
+        });
+    }
+};
+
+
+   function configureCameras(){
+    cameraList.forEach((camera) => {
+      initHLS(camera.serial_number);
+    });
+   }
+
    function changeSlide() {
     let camerasPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
     
@@ -156,18 +196,16 @@
    onMount(()=>{
     token=getToken()
     getInfo()
-    interval = setInterval(() => changeSlide(), selectedDuration * 1000); 
-    // authenticateToken()
-    // interval = setInterval(()=>changeSlide(), selectedDuration*1000);
 
 
-    // return () => {
-    //     clearInterval(interval);
-    // };
+    setTimeout(() => {
+        configureCameras()
+    }, 1000);
+
    })
 
 </script>
-<div class="flex flex-col pb-2 pt-1 rounded-xl mx-auto bg-gray-100 transition-all duration-300" style="width:100%;height:100svh;">
+<div class="flex flex-col pb-2 pt-1 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
     <div class="w-full mx-auto h-full flex flex-col transition-all duration-300">
         
         <!-- ye button ke liye hai -->
@@ -175,13 +213,13 @@
         <div class="w-full flex transition-all duration-300 flex-row p-2 justify-between items-center align-center" style="height:8svh">
             
             <div class=" flex flex-row gap-6">
-                <select class=" rounded-xl border border-xl  px-3 py-1">
+                <select class=" rounded-xl px-3 text-white py-1 bg-gray-600 ">
                     {#each pollingStationList as poll}
                         <option>{poll.polling_station}</option>
                         
                     {/each}
                 </select>
-                <select class="rounded-xl border border-xl  px-3 py-1  ">
+                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  ">
                     {#each talukaList as taluka}
                         <option>{taluka.taluka}</option>
                         
@@ -191,12 +229,12 @@
             </div>
 
             <div class="flex flex-row gap-7">
-                <select class="rounded-xl border border-xl  px-3 py-1  " on:change="{(e) => handleResolution(resolutionList[e.target.selectedIndex])}">
+                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  " on:change="{(e) => handleResolution(resolutionList[e.target.selectedIndex])}">
                     {#each resolutionList as resolution}
                         <option value='{resolution.r} x {resolution.c}'>{resolution.r} x {resolution.c}</option>
                     {/each}
                 </select>
-                <select class="rounded-xl border border-xl  px-3 py-1  " on:change="{(e) => {selectedDuration=slideDurationList[e.target.selectedIndex]}}">
+                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  " on:change="{(e) => {selectedDuration=slideDurationList[e.target.selectedIndex]}}">
                     {#each slideDurationList as duration}
                         <option value={duration}>Slide Duration : {duration}s</option>
                     {/each}
@@ -210,11 +248,17 @@
         
         
                 {#each cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col)) as camera}
-                    <button class="text-white bg-gray-700 px-1 py-1 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  transform hover:scale-95 rounded-lg transaction-all duration-300" >
-                        <div class="bg-blue-400 rounded-lg h-auto flex-grow w-full h-full"></div>
+                    <button class="text-white bg-gray-600 px-1 py-1 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  transform hover:scale-95 rounded-lg transaction-all duration-300" >
+                        <div class="rounded-lg h-auto flex-grow w-full h-full">
+                            <video autoplay class="h-full w-full" id='{camera.serial_number}'>
+                                <track kind="captions">
+                            </video>
+                        </div>
+                        
                         <div> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
                     </button>
                 {/each}
+                
         </div>
     </div>
 </div>      
