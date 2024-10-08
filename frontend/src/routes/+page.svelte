@@ -26,12 +26,16 @@
 
     let slideDurationList=[3,7,12,16,20,30,35]
 
-    let selectedDuration=12
+    let selectedDuration=3
 
     let resolutionList=[
         {
             r:"2",
             c:"3"
+        },
+        {
+            r:"1",
+            c:"1"
         },
         {
             r:"3",
@@ -139,6 +143,14 @@
    }
 
 
+
+    const playVideo = (serialNumber) =>{
+        const video = document.getElementById(`${serialNumber}`);
+        video.play().catch(error => {
+                console.error(`Error playing video with ID ${id}:`, error);
+        });
+    }
+
    const initHLS = (serialNumber) => {
     const video = document.getElementById(`${serialNumber}`);
     if (!video) {
@@ -154,17 +166,20 @@
     if (Hls.isSupported()) {
         hls.loadSource(sourceUrl);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-            video.play();
-        });
+        
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = sourceUrl;
         video.addEventListener('canplay', function () {
             video.play();
         });
     }
+  
 };
-
+    function playCameras(){
+    cameraList.forEach((camera) => {
+        playVideo(camera.serial_number);
+    });
+   }
 
    function configureCameras(){
     cameraList.forEach((camera) => {
@@ -182,9 +197,25 @@
     }
   }
 
+
+  function loadCameras(){
+  
+  }
+
    function handleResolution(resolution){
     selectedResolution.row=resolution.r
     selectedResolution.col=resolution.c
+
+    setTimeout(() => {
+        configureCameras()
+    }, 1000);
+
+    setTimeout(() => {
+        playCameras()
+    }, 10000);
+
+   
+
    }
 
    function getInfo(){
@@ -196,12 +227,17 @@
    onMount(()=>{
     token=getToken()
     getInfo()
-
-
     setTimeout(() => {
         configureCameras()
     }, 1000);
 
+    setTimeout(() => {
+        playCameras()
+    }, 10000);
+
+
+   
+    interval = setInterval(() => changeSlide(), selectedDuration * 1000); 
    })
 
 </script>
