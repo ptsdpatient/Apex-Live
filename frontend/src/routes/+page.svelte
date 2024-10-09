@@ -15,6 +15,9 @@
     return localStorage.getItem('authToken')
     }
 
+    let showingCamera=false
+    let showCameraSerialNumber=''
+    let showCamera
     let pollingStationList=[]    
     let cameraList=[]
     let talukaList=[]
@@ -33,10 +36,7 @@
             r:"2",
             c:"3"
         },
-        {
-            r:"1",
-            c:"1"
-        },
+       
         {
             r:"3",
             c:"4"
@@ -49,12 +49,23 @@
         },
     ]
 
+
+
+    function showThisCamera(camera){
+        showCameraSerialNumber=camera.serial_number
+        showingCamera=true
+        // showCamera=
+    }
+
+
+
     async function authenticateToken() {
+        const token = localStorage.getItem('authToken'); 
         if (!token) {
             window.location = '/login'; 
             return;
         }
-    
+     
         try {
             const response = await fetch(`${url}/authenticateToken`, {
                 method: 'GET',
@@ -66,19 +77,14 @@
 
             const data = await response.json();
 
-            if(data.done){
-                console.log('Authenticated user:', data);
-                if(data.error) window.location='/login'
-                isAdmin=data.isAdmin
-                alert("login successful")
-            }
-
             if (response.ok) {
-                
-               console.log("real")
+                // Token is valid; you can proceed to the user page or show user data
+                console.log('Authenticated user:', data);
+                if(data.error)window.location='/login'
+               
             } else {
                 alert(data.error || 'Token is invalid');
-                window.location = '/login'; 
+                window.location = '/login'; // Redirect to login if token is invalid
             }
         } catch (error) {
             console.error('Error during token authentication:', error);
@@ -152,27 +158,27 @@
     }
 
    const initHLS = (serialNumber) => {
-    const video = document.getElementById(`${serialNumber}`);
-    if (!video) {
-        console.error(`Video element not found for serial number: ${serialNumber}`);
-        return;
-    }
+        const video = document.getElementById(`${serialNumber}`);
+        if (!video) {
+            console.error(`Video element not found for serial number: ${serialNumber}`);
+            return;
+        }
 
-    const hls = new Hls();
-    const sourceUrl = `http://${ip}:${port}/live/${serialNumber}/index.m3u8`;
+        const hls = new Hls();
+        const sourceUrl = `http://${ip}:${port}/live/${serialNumber}/index.m3u8`;
 
-    console.log(`Loading HLS source: ${sourceUrl}`);
-    
-    if (Hls.isSupported()) {
-        hls.loadSource(sourceUrl);
-        hls.attachMedia(video);
+        console.log(`Loading HLS source: ${sourceUrl}`);
         
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = sourceUrl;
-        video.addEventListener('canplay', function () {
-            video.play();
-        });
-    }
+        if (Hls.isSupported()) {
+            hls.loadSource(sourceUrl);
+            hls.attachMedia(video);
+            
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = sourceUrl;
+            video.addEventListener('canplay', function () {
+                video.play();
+            });
+        }
   
 };
     function playCameras(){
@@ -219,6 +225,7 @@
    }
 
    function getInfo(){
+    authenticateToken()
     fetchPollingStations()
     fetchTalukas()
     fetchCameras()
@@ -241,13 +248,25 @@
    })
 
 </script>
-<div class="flex flex-col pb-2 pt-1 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
-    <div class="w-full mx-auto h-full flex flex-col transition-all duration-300">
+
+
+
+
+<div class="flex flex-col pb-2 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
+    <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
+        <div class="hover:cursor-default w-full h-full  relative">
+            <div class="absolute w-full flex flex-row justify-end top-0 left-0">
+                <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button>
+            </div>
+        </div>
+    </button>
+    
+    <div class="w-full mx-auto h-full flex flex-col bg-gray-900">
         
         <!-- ye button ke liye hai -->
          
         <div class="w-full flex transition-all duration-300 flex-row p-2 justify-between items-center align-center" style="height:8svh">
-            
+                        
             <div class=" flex flex-row gap-6">
                 <select class=" rounded-xl px-3 text-white py-1 bg-gray-600 ">
                     {#each pollingStationList as poll}
@@ -280,21 +299,48 @@
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-2 jusify-around  gap-2" style="height:92svh;">
-        
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-2 jusify-around  gap-2" style="height:92svh;">
+
+               
         
                 {#each cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col)) as camera}
-                    <button class="text-white bg-gray-600 px-1 py-1 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  transform hover:scale-95 rounded-lg transaction-all duration-300" >
-                        <div class="rounded-lg h-auto flex-grow w-full h-full">
+                    <div class="text-white bg-gray-600 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
+                        <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
+                            <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
+                                <div class="text-6xl text-white">⛶</div>
+                            </button> -->
                             <video autoplay class="h-full w-full" id='{camera.serial_number}'>
                                 <track kind="captions">
                             </video>
                         </div>
-                        
-                        <div> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
-                    </button>
+                        <div class="w-full bg-purple-100 relative">
+
+                            <div class=" camera_info text-black"> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold px-1  text-black">
+                                <button on:click={()=>{showThisCamera(camera)}} class="transform hover:scale-110 hover:text-gray-700 text-black transition-all duration-300">⛶</button>
+                            </div>
+                        </div>
+                    </div>
                 {/each}
                 
         </div>
     </div>
 </div>      
+
+
+
+<style>
+
+    .camera_info{
+        animation: scroll_animation 15s linear infinite;
+    }
+
+    @keyframes scroll_animation{
+        0%{
+            transform:translate(20%);
+        }
+        100%{
+            transform:translate(-100%);
+        }
+    }
+</style>

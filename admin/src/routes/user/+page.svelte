@@ -242,8 +242,8 @@
 
 
     async function registerCamera() {
-        if (!serialNumber || !cameraPollStation || serialNumber=='' || cameraPollStation=='') {
-            alert("Please enter all name, password and number");
+        if (serialNumber=='' || cameraPollStation=='') {
+            alert("Please enter all information regarding camera");
             return;
         }
 
@@ -267,6 +267,8 @@
                     serialNumber=''
                     getInfo()
                     showSuccessAlert("Camera registered! with model number : " + data.name)
+                }else {
+                    alert("Camera already exists!")
                 }
             } else {
                 alert(data.error || 'Registeration failed');

@@ -8,7 +8,7 @@
             window.location = '/login'; 
             return;
         }
-    
+     
         try {
             const response = await fetch(`${url}/authenticateToken`, {
                 method: 'GET',
