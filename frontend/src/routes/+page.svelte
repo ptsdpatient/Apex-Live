@@ -255,8 +255,26 @@
 <div class="flex flex-col pb-2 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
     <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
         <div class="hover:cursor-default w-full h-full  relative">
-            <div class="absolute w-full flex flex-row justify-end top-0 left-0">
-                <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button>
+            <div class="absolute w-full flex flex-col justify-end top-0 left-0">
+                    <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
+                        <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
+                            <div class="text-6xl text-white">⛶</div>
+                        </button> -->
+                        <div class="w-full bg-gray-900 relative text-5xl">
+
+                            <div class=" camera_info text-white rounded-xl py-3"> 5516516156515651616151</div>
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-6xl font-bold  ">
+                                <button on:click={()=>{showingCamera=false}} class="bg-gray-900 px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                            </div>
+                        </div>
+                        <video autoplay class="h-full w-full" id='31315115333'>
+                            <track kind="captions">
+                        </video>
+                    </div>
+                    
+
+
+                <!-- <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button> -->
             </div>
         </div>
     </button>
@@ -265,16 +283,16 @@
         
         <!-- ye button ke liye hai -->
          
-        <div class="w-full flex transition-all duration-300 flex-row p-2 justify-between items-center align-center" style="height:8svh">
+        <div class="w-full flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:8svh">
                         
             <div class=" flex flex-row gap-6">
-                <select class=" rounded-xl px-3 text-white py-1 bg-gray-600 ">
+                <select class=" rounded-xl px-5  text-white py-1  bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer">
                     {#each pollingStationList as poll}
                         <option>{poll.polling_station}</option>
                         
                     {/each}
                 </select>
-                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  ">
+                <select class="rounded-xl  text-white   bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  ">
                     {#each talukaList as taluka}
                         <option>{taluka.taluka}</option>
                         
@@ -284,12 +302,12 @@
             </div>
 
             <div class="flex flex-row gap-7">
-                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  " on:change="{(e) => handleResolution(resolutionList[e.target.selectedIndex])}">
+                <select class="rounded-xl  text-white py-1 bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  " on:change="{(e) => handleResolution(resolutionList[e.target.selectedIndex])}">
                     {#each resolutionList as resolution}
                         <option value='{resolution.r} x {resolution.c}'>{resolution.r} x {resolution.c}</option>
                     {/each}
                 </select>
-                <select class="rounded-xl  text-white py-1 bg-gray-600   px-3 py-1  " on:change="{(e) => {selectedDuration=slideDurationList[e.target.selectedIndex]}}">
+                <select class="rounded-xl  text-white   bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  " on:change="{(e) => {selectedDuration=slideDurationList[e.target.selectedIndex]}}">
                     {#each slideDurationList as duration}
                         <option value={duration}>Slide Duration : {duration}s</option>
                     {/each}
@@ -299,12 +317,12 @@
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-2 jusify-around  gap-2" style="height:92svh;">
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:92svh;">
 
                
         
                 {#each cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col)) as camera}
-                    <div class="text-white bg-gray-600 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
+                    <div class="text-white bg-gray-800 border-2 border-gray-700 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
                         <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
                             <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
                                 <div class="text-6xl text-white">⛶</div>
@@ -313,11 +331,11 @@
                                 <track kind="captions">
                             </video>
                         </div>
-                        <div class="w-full bg-purple-100 relative">
+                        <div class="w-full bg-gray-900 relative text-2xl">
 
-                            <div class=" camera_info text-black"> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
-                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold px-1  text-black">
-                                <button on:click={()=>{showThisCamera(camera)}} class="transform hover:scale-110 hover:text-gray-700 text-black transition-all duration-300">⛶</button>
+                            <div class=" camera_info text-white rounded-xl"> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
+                                <button on:click={()=>{showThisCamera(camera)}} class="bg-gray-900 px-2  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                             </div>
                         </div>
                     </div>
@@ -332,7 +350,7 @@
 <style>
 
     .camera_info{
-        animation: scroll_animation 15s linear infinite;
+        animation: scroll_animation 25s linear infinite;
     }
 
     @keyframes scroll_animation{
