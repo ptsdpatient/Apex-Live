@@ -8,8 +8,8 @@
     let url='http://localhost:2000'
     let token
 
-    let port=4000
-    let ip='localhost'
+    let port=8080
+    let ip='192.168.1.11'
 
     const getToken = () =>{
     return localStorage.getItem('authToken')
@@ -171,7 +171,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/live/${serialNumber}/index.m3u8`;
+        const sourceUrl = `http://${ip}:${port}/hls/${serialNumber}.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         
