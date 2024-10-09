@@ -17,7 +17,10 @@
 
     let showingCamera=false
     let showCameraSerialNumber=''
-    let showCamera
+    let showCameraElement
+    let showCameraPS=''
+    let showCameraM=''
+    let showCameraPA=''
     let pollingStationList=[]    
     let cameraList=[]
     let talukaList=[]
@@ -54,6 +57,9 @@
     function showThisCamera(camera){
         showCameraSerialNumber=camera.serial_number
         showingCamera=true
+        showCameraPS=camera.polling_station
+        showCameraM=camera.serial_number
+        showCameraPA=camera.polling_address
         // showCamera=
     }
 
@@ -262,12 +268,12 @@
                         </button> -->
                         <div class="w-full bg-gray-900 relative text-5xl">
 
-                            <div class=" camera_info text-white rounded-xl py-3"> 5516516156515651616151</div>
-                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-6xl font-bold  ">
+                            <div class=" camera_info text-white rounded-xl py-3">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-5xl font-bold  ">
                                 <button on:click={()=>{showingCamera=false}} class="bg-gray-900 px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full" id='31315115333'>
+                        <video autoplay class="h-full w-full" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
@@ -333,7 +339,7 @@
                         </div>
                         <div class="w-full bg-gray-900 relative text-2xl">
 
-                            <div class=" camera_info text-white rounded-xl"> PS : {camera.polling_station} Model : {camera.serial_number} Address : {camera.polling_address}</div>
+                            <div class=" camera_info text-white rounded-xl"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
                                 <button on:click={()=>{showThisCamera(camera)}} class="bg-gray-900 px-2  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                             </div>
