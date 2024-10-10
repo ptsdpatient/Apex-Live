@@ -307,13 +307,10 @@ onMount(()=>{
 <div class="flex flex-col pb-2 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
     <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
         <div class="hover:cursor-default w-full h-full  relative">
-            <div class="absolute w-full flex flex-col justify-end top-0 left-0">
+            <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
                 <div class="w-1/12 absolute top-0 left-0 z-40 h-full bg-black">
                 </div>
-                    <div class="rounded-lg group  h-auto relative flex-grow w-10/12 mx-auto h-full">
-                        <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
-                            <div class="text-6xl text-white">⛶</div>
-                        </button> -->
+                    <div class="rounded-lg group  h-full relative flex-grow w-10/12 mx-auto h-full">
                         <div class="w-full bg-gray-900 relative text-xl">
 
                             <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
