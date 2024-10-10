@@ -357,12 +357,12 @@ const removeHLS = (serialNumber) => {
                         <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
                             <div class="text-6xl text-white">⛶</div>
                         </button> -->
-                        <div class="w-full bg-gray-900 relative text-5xl">
+                        <div class="w-full bg-gray-900 relative text-xl">
 
-                            <div class=" camera_info text-white rounded-xl py-3  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
-                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-5xl font-bold  ">
+                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
                                 <div class="bg-gray-900 h-full relative">
-                                    <button on:click={()=>{showingCamera=false}} class=" px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                    <button on:click={()=>{showingCamera=false}} class=" px-3  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                                 </div>
                             </div>
                         </div>
@@ -381,7 +381,7 @@ const removeHLS = (serialNumber) => {
         
         <!-- ye button ke liye hai -->
          
-        <div class="w-full px-10 flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:14svh">
+        <div class="w-full px-10 flex transition-all duration-300 flex-row text-xl p-2 justify-between items-center align-center" style="height:14svh">
                         
             <div class=" flex flex-row gap-6">
                 <select class=" rounded-xl px-5  text-white py-1  bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer">
@@ -427,12 +427,12 @@ const removeHLS = (serialNumber) => {
                                 <track kind="captions">
                             </video>
                         </div>
-                        <div class="w-full bg-gray-900 relative text-2xl">
+                        <div class="w-full bg-gray-900 relative text-base">
 
                             <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
-                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
+                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold  ">
                                 <div class="bg-gray-900">
-                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
 
                                 </div>
                             </div>
