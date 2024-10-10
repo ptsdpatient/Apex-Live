@@ -32,7 +32,6 @@ CREATE TABLE cameras (
     PS INTEGER ,
     FOREIGN KEY (PS) REFERENCES polling_stations(id) ON DELETE SET NULL,
     serial_number TEXT UNIQUE,
-    stream_url TEXT,
     sent_at TEXT,
     removed_at TEXT,
     is_active BOOLEAN

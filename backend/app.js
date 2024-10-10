@@ -7,6 +7,7 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken');
 const secretKey='apex_live'
 
+
 let index=0
 
 
@@ -199,10 +200,16 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
             LEFT JOIN taluka ON polling_stations.taluka = taluka.id;
         `;    
     
-
         const { rows } = await pool.query(query);
 
-        res.status(200).json(rows);
+        const modifiedRows = rows.map(row => ({
+            ...row,
+            visible: false 
+        }));
+
+
+        res.status(200).json(modifiedRows);
+
     }catch(err){
         res.status(500).json({ error: 'Internal Server Error' });
     }

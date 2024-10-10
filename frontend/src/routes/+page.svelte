@@ -29,6 +29,7 @@
          row:"3",
          col:"4"
     };
+    let cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col)
 
     let slideDurationList=[3,7,12,16,20,30,35]
 
@@ -150,11 +151,14 @@
            });
 
            cameraList = await response.json();
+           updateVisibleCameras()
+
        } catch (error) {
            console.error('Error fetching employees:', error);
            errorMessage = 'An error occurred while fetching employees.';
        }
    }
+
 
    async function fetchTalukas() {
        
@@ -209,126 +213,67 @@
 };
 
 
-const removeHLS = (serialNumber) => {
-    const video = document.getElementById(`${serialNumber}`);
-    if (!video) {
-        console.error(`Video element not found for serial number: ${serialNumber}`);
-        return;
-    }
 
-    // if (Hls.isSupported()) {
-    //     const hls = Hls.instances.find(h => h.media === video); // Find the HLS instance attached to this video
-    //     if (hls) {
-    //         hls.stopLoad();    // Stop loading the HLS stream
-    //         hls.detachMedia(); // Detach the HLS from the video element
-    //     }
-    // }
-
-    // Reset video source to make it blank
-    video.src = '';
-    video.load(); // Optionally reload to ensure the video is fully reset
-    // console.log(`HLS stream removed for camera: ${serialNumber}`);
-};
+function playCameras(){
 
 
-    function playCameras(){
-
-        const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
-    
-        visibleCameras.forEach((camera) => {
+    cameraList.forEach((camera) => {
         playVideo(camera.serial_number);
-        });
-
-
-    // cameraList.forEach((camera) => {
-    //     playVideo(camera.serial_number);
-    // });
-   }
-
-   function initializeCameras(){
-
-    const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
-
-    visibleCameras.forEach((camera) => {
-        removeHLS(camera.serial_number);
     });
 
-    // cameraList.forEach((camera) => {
-    //   initHLS(camera.serial_number);
-    // });
-    }
+   }
+
+   
    
 
    function configureCameras(){
-
-    const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
-    
-    visibleCameras.forEach((camera) => {
+    cameraList.forEach((camera) => {
       initHLS(camera.serial_number);
     });
 
-    // cameraList.forEach((camera) => {
-    //   initHLS(camera.serial_number);
-    // });
+
+
    }
 
    function changeSlide() {
-    let camerasPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
+    cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
     
-    cameraIndex += camerasPerSet;
+    cameraIndex += cameraPerSet;
 
     if (cameraIndex >= cameraList.length) {
       cameraIndex = 0;
     }
-    
 
-    initializeCameras()
-
-    setTimeout(() => {
-        configureCameras()
-    }, 1000);
-
-    setTimeout(() => {
-        playCameras()
-    }, 10000);
-
+    updateVisibleCameras()
   }
 
+  function updateVisibleCameras() {
+    cameraList = cameraList.map((camera, index) => {
+        camera.visible = ( index>=cameraIndex && index<=(cameraIndex+cameraPerSet));  
+        return camera;
+    });
+}
 
-  function loadCameras(){
   
-  }
 
-   function handleResolution(resolution){
-    selectedResolution.row=resolution.r
-    selectedResolution.col=resolution.c
+function handleResolution(resolution) {
+    selectedResolution.row = resolution.r;
+    selectedResolution.col = resolution.c;
+    cameraIndex = 0; 
+    updateVisibleCameras(); 
+}
 
-
-    initializeCameras()
-
-
-    setTimeout(() => {
-        configureCameras()
-    }, 1000);
-
-    setTimeout(() => {
-        playCameras()
-    }, 10000);
-
-
-   }
-
-   function getInfo(){
+   async function getInfo(){
     authenticateToken()
-    fetchPollingStations()
-    fetchTalukas()
-    fetchCameras()
+    await fetchPollingStations()
+    await fetchTalukas()
+    await fetchCameras()
    }
 
    onMount(()=>{
     token=getToken()
     getInfo()
-
+    
     setTimeout(() => {
         configureCameras()
     }, 1000);
@@ -337,8 +282,7 @@ const removeHLS = (serialNumber) => {
         playCameras()
     }, 10000);
 
-
-   
+    
     interval = setInterval(() => changeSlide(), selectedDuration * 1000); 
    })
 
@@ -419,8 +363,8 @@ const removeHLS = (serialNumber) => {
 
                
         
-                {#each cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col)) as camera}
-                    <div class="text-white bg-gray-800 border-2 border-gray-700 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
+                {#each cameraList as camera}
+                    <div class="text-white bg-gray-800 {camera.visible?"flex":"hidden"} border-2 border-gray-700  flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
                         <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
                            
                             <video autoplay class="h-full w-full" id='{camera.serial_number}'>
@@ -433,7 +377,6 @@ const removeHLS = (serialNumber) => {
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold  ">
                                 <div class="bg-gray-900">
                                     <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
-
                                 </div>
                             </div>
                         </div>
