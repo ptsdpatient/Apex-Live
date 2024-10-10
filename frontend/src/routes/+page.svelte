@@ -20,14 +20,14 @@
     let showCameraElement
     let showCameraPS=''
     let showCameraM=''
+    let selectedTaluka='All'
     let showCameraPA=''
-    let pollingStationList=[]    
     let cameraList=[]
     let talukaList=[]
     let cameraIndex=0
     let selectedResolution ={
-         row:"3",
-         col:"4"
+         row:"2",
+         col:"3"
     };
     let cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col)
 
@@ -121,23 +121,7 @@
 
 
 
-    async function fetchPollingStations() {
-       
-       try {
-           const response = await fetch(`${url}/getPollingStation`, {
-               method: 'GET',
-               headers: {
-                   'Authorization': `Bearer ${token}`,
-                   'Content-Type': 'application/json'
-               }
-           });
-
-           pollingStationList = await response.json();
-       } catch (error) {
-           console.error('Error fetching employees:', error);
-           errorMessage = 'An error occurred while fetching employees.';
-       }
-   }
+   
 
    async function fetchCameras() {
        
@@ -215,43 +199,73 @@
 
 
 function playCameras(){
-
-
     cameraList.forEach((camera) => {
         playVideo(camera.serial_number);
     });
-
-   }
+}
 
    
    
 
-   function configureCameras(){
+function configureCameras(){
     cameraList.forEach((camera) => {
-      initHLS(camera.serial_number);
-    });
+    initHLS(camera.serial_number);
+});
 
 
 
-   }
+}
 
-   function changeSlide() {
+function changeSlide() {
     cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
-    
+
     cameraIndex += cameraPerSet;
 
-    if (cameraIndex >= cameraList.length) {
-      cameraIndex = 0;
+    if(selectedTaluka==="All"){
+        if (cameraIndex >= cameraList.length) {
+            cameraIndex = 0;
+        }
+    }else {
+        let selectedTalukaLength = 0;
+        cameraList.forEach((camera,index)=>{
+            if (camera.taluka_name === selectedTaluka) {
+                selectedTalukaLength++;
+            }
+        })
+        if(cameraIndex>=slectedTalukaLength){
+            cameraIndex=0
+        }
     }
 
     updateVisibleCameras()
-  }
+}
 
-  function updateVisibleCameras() {
-    cameraList = cameraList.map((camera, index) => {
-        camera.visible = ( index>=cameraIndex && index<=(cameraIndex+cameraPerSet));  
-        return camera;
-    });
+function updateVisibleCameras() {
+    let selectedTalukaLength = 0;
+
+    if (selectedTaluka !== "All") {
+        // cameraIndex=0;
+        cameraList = cameraList.map((camera, index) => {
+                if (camera.taluka_name === selectedTaluka) {
+                    selectedTalukaLength++;
+                    camera.visible = (selectedTalukaLength > cameraIndex && selectedTalukaLength <= (cameraIndex + cameraPerSet));
+                } else {
+                    camera.visible = false;
+                }
+            return camera;
+        });
+    }
+
+    if(selectedTaluka==="All"){
+            cameraList = cameraList.map((camera, index) => {
+            camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
+            if(camera.visible&&selectedTaluka!="All"){
+                camera.visible=camera.taluka_name===selectedTaluka;
+            }
+            return camera;
+        }
+    );
+    }
 }
 
   
@@ -263,17 +277,16 @@ function handleResolution(resolution) {
     updateVisibleCameras(); 
 }
 
-   async function getInfo(){
+async function getInfo(){
     authenticateToken()
-    await fetchPollingStations()
     await fetchTalukas()
     await fetchCameras()
-   }
+}
 
-   onMount(()=>{
+onMount(()=>{
     token=getToken()
     getInfo()
-    
+
     setTimeout(() => {
         configureCameras()
     }, 1000);
@@ -282,9 +295,9 @@ function handleResolution(resolution) {
         playCameras()
     }, 10000);
 
-    
-    interval = setInterval(() => changeSlide(), selectedDuration * 1000); 
-   })
+
+    interval = setInterval(() => changeSlide(), 500); 
+})
 
 </script>
 
@@ -327,17 +340,12 @@ function handleResolution(resolution) {
          
         <div class="w-full px-10 flex transition-all duration-300 flex-row text-xl p-2 justify-between items-center align-center" style="height:14svh">
                         
-            <div class=" flex flex-row gap-6">
-                <select class=" rounded-xl px-5  text-white py-1  bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer">
-                    {#each pollingStationList as poll}
-                        <option>{poll.polling_station}</option>
-                        
-                    {/each}
-                </select>
-                <select class="rounded-xl  text-white   bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  ">
+            <div class="text-white items-center flex flex-row gap-6">
+                <div>Taluka : </div>
+                <select value="All" class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {selectedTaluka = e.target.value;cameraIndex=0;updateVisibleCameras();}}">
+                    <option value="All">All</option>
                     {#each talukaList as taluka}
-                        <option>{taluka.taluka}</option>
-                        
+                        <option value={taluka.taluka}>{taluka.taluka}</option>
                     {/each}
                 </select>
             
