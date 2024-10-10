@@ -26,13 +26,13 @@
     let talukaList=[]
     let cameraIndex=0
     let selectedResolution ={
-        row : "2",
-        col : "3"
+         row:"3",
+         col:"4"
     };
 
     let slideDurationList=[3,7,12,16,20,30,35]
 
-    let selectedDuration=3
+    let selectedDuration=10
 
     let resolutionList=[
         {
@@ -207,16 +207,69 @@
         }
   
 };
+
+
+const removeHLS = (serialNumber) => {
+    const video = document.getElementById(`${serialNumber}`);
+    if (!video) {
+        console.error(`Video element not found for serial number: ${serialNumber}`);
+        return;
+    }
+
+    // if (Hls.isSupported()) {
+    //     const hls = Hls.instances.find(h => h.media === video); // Find the HLS instance attached to this video
+    //     if (hls) {
+    //         hls.stopLoad();    // Stop loading the HLS stream
+    //         hls.detachMedia(); // Detach the HLS from the video element
+    //     }
+    // }
+
+    // Reset video source to make it blank
+    video.src = '';
+    video.load(); // Optionally reload to ensure the video is fully reset
+    // console.log(`HLS stream removed for camera: ${serialNumber}`);
+};
+
+
     function playCameras(){
-    cameraList.forEach((camera) => {
+
+        const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
+    
+        visibleCameras.forEach((camera) => {
         playVideo(camera.serial_number);
-    });
+        });
+
+
+    // cameraList.forEach((camera) => {
+    //     playVideo(camera.serial_number);
+    // });
    }
 
+   function initializeCameras(){
+
+    const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
+
+    visibleCameras.forEach((camera) => {
+        removeHLS(camera.serial_number);
+    });
+
+    // cameraList.forEach((camera) => {
+    //   initHLS(camera.serial_number);
+    // });
+    }
+   
+
    function configureCameras(){
-    cameraList.forEach((camera) => {
+
+    const visibleCameras = cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col));
+    
+    visibleCameras.forEach((camera) => {
       initHLS(camera.serial_number);
     });
+
+    // cameraList.forEach((camera) => {
+    //   initHLS(camera.serial_number);
+    // });
    }
 
    function changeSlide() {
@@ -227,6 +280,18 @@
     if (cameraIndex >= cameraList.length) {
       cameraIndex = 0;
     }
+    
+
+    initializeCameras()
+
+    setTimeout(() => {
+        configureCameras()
+    }, 1000);
+
+    setTimeout(() => {
+        playCameras()
+    }, 10000);
+
   }
 
 
@@ -238,6 +303,10 @@
     selectedResolution.row=resolution.r
     selectedResolution.col=resolution.c
 
+
+    initializeCameras()
+
+
     setTimeout(() => {
         configureCameras()
     }, 1000);
@@ -246,7 +315,6 @@
         playCameras()
     }, 10000);
 
-   
 
    }
 
@@ -260,6 +328,7 @@
    onMount(()=>{
     token=getToken()
     getInfo()
+
     setTimeout(() => {
         configureCameras()
     }, 1000);
@@ -282,7 +351,9 @@
     <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
         <div class="hover:cursor-default w-full h-full  relative">
             <div class="absolute w-full flex flex-col justify-end top-0 left-0">
-                    <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
+                <div class="w-1/12 absolute top-0 left-0 z-40 h-full bg-black">
+                </div>
+                    <div class="rounded-lg group  h-auto relative flex-grow w-10/12 mx-auto h-full">
                         <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
                             <div class="text-6xl text-white">⛶</div>
                         </button> -->
@@ -290,16 +361,17 @@
 
                             <div class=" camera_info text-white rounded-xl py-3  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-5xl font-bold  ">
-                                <div class="bg-gray-900 h-full">
+                                <div class="bg-gray-900 h-full relative">
                                     <button on:click={()=>{showingCamera=false}} class=" px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                                 </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full bg-red-500" id='showCameraID'>
+                        <video autoplay class="h-full w-full bg-gray-800" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
-                    
+                    <div class="w-1/12 absolute top-0 right-0 z-40 h-full bg-black">
+                    </div>
                 <!-- <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button> -->
             </div>
         </div>
@@ -309,7 +381,7 @@
         
         <!-- ye button ke liye hai -->
          
-        <div class="w-full px-14 flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:14svh">
+        <div class="w-full px-10 flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:14svh">
                         
             <div class=" flex flex-row gap-6">
                 <select class=" rounded-xl px-5  text-white py-1  bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer">
@@ -343,16 +415,14 @@
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-3" style="height:86svh;">
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">
 
                
         
                 {#each cameraList.slice(cameraIndex, cameraIndex + Number(selectedResolution.row) * Number(selectedResolution.col)) as camera}
                     <div class="text-white bg-gray-800 border-2 border-gray-700 flex flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
                         <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
-                            <!-- <button class="w-full h-full transition-all duration-200 absolute top-0 left-0 items-center hover:bg-black z-10 hover:bg-opacity-80 hidden group-hover:flex flex-row justify-center">
-                                <div class="text-6xl text-white">⛶</div>
-                            </button> -->
+                           
                             <video autoplay class="h-full w-full" id='{camera.serial_number}'>
                                 <track kind="captions">
                             </video>
