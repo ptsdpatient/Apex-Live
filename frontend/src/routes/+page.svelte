@@ -33,7 +33,7 @@
 
     let slideDurationList=[3,7,12,16,20,30,35]
 
-    let selectedDuration=10
+    let selectedDuration=3
 
     let resolutionList=[
         {
@@ -296,7 +296,7 @@ onMount(()=>{
     }, 10000);
 
 
-    interval = setInterval(() => changeSlide(), 500); 
+    interval = setInterval(() => changeSlide(), selectedDuration*1000); 
 })
 
 </script>
