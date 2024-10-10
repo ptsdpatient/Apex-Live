@@ -8,6 +8,7 @@
     let url='http://localhost:2000'
     let token
 
+    let interval
     let port=8000
     let ip='localhost'
 
@@ -358,7 +359,7 @@ onMount(()=>{
                         <option value='{resolution.r} x {resolution.c}'>{resolution.r} x {resolution.c}</option>
                     {/each}
                 </select>
-                <select class="rounded-xl  text-white   bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  " on:change="{(e) => {selectedDuration=slideDurationList[e.target.selectedIndex]}}">
+                <select class="rounded-xl  text-white   bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer   px-5 py-1  " on:change="{(e) => {selectedDuration= Number(e.target.value);clearInterval(interval);interval = setInterval(() => changeSlide(), selectedDuration*1000); }}">
                     {#each slideDurationList as duration}
                         <option value={duration}>Slide Duration : {duration}s</option>
                     {/each}
