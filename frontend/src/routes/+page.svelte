@@ -309,7 +309,7 @@
         
         <!-- ye button ke liye hai -->
          
-        <div class="w-full flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:8svh">
+        <div class="w-full px-14 flex transition-all duration-300 flex-row text-2xl p-2 justify-between items-center align-center" style="height:14svh">
                         
             <div class=" flex flex-row gap-6">
                 <select class=" rounded-xl px-5  text-white py-1  bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer">
@@ -343,7 +343,7 @@
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:92svh;">
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-3" style="height:86svh;">
 
                
         
