@@ -11,7 +11,7 @@
     <div class="min-h-screen flex flex-col items-center justify-center">
         <!-- Left-side image container -->
         <div class="w-1/3 flex justify-center">
-            <img src="proicon.png" alt="Placeholder Image" class="w-full h-full object-cover rounded-md">
+            <img src="proicon.png" alt="error image initially" class="w-full h-full object-cover rounded-md">
         </div>
         <!-- Right-side text container -->
         <div class="w-2/3  text-center ml-8">
