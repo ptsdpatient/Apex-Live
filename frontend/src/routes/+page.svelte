@@ -8,8 +8,8 @@
     let url='http://localhost:2000'
     let token
 
-    let port=8080
-    let ip='192.168.1.11'
+    let port=8000
+    let ip='localhost'
 
     const getToken = () =>{
     return localStorage.getItem('authToken')
@@ -60,7 +60,27 @@
         showCameraPS=camera.polling_station
         showCameraM=camera.serial_number
         showCameraPA=camera.polling_address
-        // showCamera=
+        const video = document.getElementById(`showCameraID`);
+        if (!video) {
+            console.error(`Video element not found for serial number: ${serialNumber}`);
+            return;
+        }
+
+        const hls = new Hls();
+        const sourceUrl = `http://${ip}:${port}/live/${camera.serial_number}/index.m3u8`;
+
+        console.log(`Loading HLS source: ${sourceUrl}`);
+        
+        if (Hls.isSupported()) {
+            hls.loadSource(sourceUrl);
+            hls.attachMedia(video);
+            
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = sourceUrl;
+            video.addEventListener('canplay', function () {
+                video.play();
+            });
+        }
     }
 
 
@@ -171,7 +191,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/hls/${serialNumber}.m3u8`;
+        const sourceUrl = `http://${ip}:${port}/live/${serialNumber}/index.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         
@@ -268,18 +288,18 @@
                         </button> -->
                         <div class="w-full bg-gray-900 relative text-5xl">
 
-                            <div class=" camera_info text-white rounded-xl py-3">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
+                            <div class=" camera_info text-white rounded-xl py-3  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-5xl font-bold  ">
-                                <button on:click={()=>{showingCamera=false}} class="bg-gray-900 px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                <div class="bg-gray-900 h-full">
+                                    <button on:click={()=>{showingCamera=false}} class=" px-5  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full" id='showCameraID'>
+                        <video autoplay class="h-full w-full bg-red-500" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
                     
-
-
                 <!-- <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button> -->
             </div>
         </div>
@@ -339,9 +359,12 @@
                         </div>
                         <div class="w-full bg-gray-900 relative text-2xl">
 
-                            <div class=" camera_info text-white rounded-xl"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
+                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
-                                <button on:click={()=>{showThisCamera(camera)}} class="bg-gray-900 px-2  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                <div class="bg-gray-900">
+                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+
+                                </div>
                             </div>
                         </div>
                     </div>
