@@ -700,7 +700,6 @@
                           <th class="py-2 px-4">Camera ID</th>
                           <th class="py-2 px-4">Serial Number</th>
                           <th class="py-2 px-4">Taluka Name</th>
-                          <th class="py-2 px-4">Stream URL</th>
                           <th class="py-2 px-4">Polling Station</th>
                           <th class="py-2 px-4">Operator</th>
                           <th class="py-2 px-4">Operator Mobile Number</th>
@@ -714,9 +713,6 @@
                             <td class="py-2 px-4">{camera.camera_id}</td>
                             <td class="py-2 px-4">{camera.serial_number}</td>
                             <td class="py-2 px-4">{camera.taluka_name}</td>
-                            <td class="py-2 px-4">
-                              <a href={camera.stream_url} target="_blank" class="text-blue-500 hover:underline">{camera.stream_url}</a>
-                            </td>
                             <td class="py-2 px-4">{camera.polling_station}</td>
                             <td class="py-2 px-4">{camera.operator_name}</td>
                             <td class="py-2 px-4">{camera.operator_phone}</td>
