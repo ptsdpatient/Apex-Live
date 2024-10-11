@@ -286,7 +286,6 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
 
 
     try{
-
         const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station = $1',[trimmed_poll_station])
         // console.log("pol id got")
        if (poll_id.rowCount === 0) {
