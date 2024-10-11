@@ -183,6 +183,7 @@ app.get('/getTalukas',authenticateToken,async (req,res)=>{
 
 
 app.get('/getCameras',authenticateToken,async (req,res)=>{
+    console.log("getting cameras")
     try{
         const query = `        
             SELECT 
@@ -208,7 +209,7 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
             visible: false 
         }));
 
-
+        console.log(modifiedRows)
         res.status(200).json(modifiedRows);
 
     }catch(err){
@@ -277,6 +278,9 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
 app.post('/registerCamera',authenticateToken,async (req,res)=>{
     // console.log("camera request received")
     const {number,poll_station} = req.body
+    if(number==null || poll_station==null || number=='' || poll_station=='') {
+        res.status(401).json({ message: 'Camera not registered.',done:false });
+    }
     const trimmed_poll_station = poll_station.trim();
 
 
@@ -300,7 +304,7 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
         }else res.status(404).json({done:false})
     }catch(e){
         console.log("error occured : "+e)
-        res.status(201).json({ message: 'Employee not registered.',done:false });
+        res.status(401).json({ message: 'Camera not registered.',done:false });
 
     }
 })
@@ -376,7 +380,7 @@ app.post('/login', async (req, res) => {
                     full_name: name,
                     isAdmin: rows[0].is_admin !== 0,
                 },
-                token,
+                token:token,
                 admin: rows[0].is_admin !== 0
             });
         } else {

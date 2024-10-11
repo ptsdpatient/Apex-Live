@@ -26,29 +26,110 @@ class _UserPageState extends State<UserPage> {
   bool isProcessing = false;
   XFile? capturedImage;
   String? decodedQRCode;
-  bool isAdmin=false;
+  bool isAdmin=true;
   final serialNumberController = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   String? selectedPollingStationId;
   String? pollingStationId;
   bool isDropdownOpen = false;
+
+
+  late Future<List<String>>? cameraList;
+  late Future<List<String>>? pollsList;
+
   List<String> pollingStationIdList=['Select polling station',''];
-
-
-
 
 
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://localhost:2000/";
+  String apiKey="http://192.168.1.15:2000/";
 
   void fetchInfo(){
     fetchPollingStation();
   }
 
+
+  Future<List<String>> fetchCameras() async{
+    String? token = await storage.read(key: 'token');
+
+    final url = Uri.parse('${apiKey}getCameras');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Fetched info successfully: ${response.body}');
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+
+
+        return responseData.map<String>((data) {
+          return '${data['camera_id']}. CID : ${data['serial_number']}, \n \t PS : ${data['polling_station']}';
+        }).toList();
+
+
+      } else {
+        print('Fetch failed: ${response.statusCode} - ${response.body}');
+
+        return [];
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+
+      return [];
+
+    }
+  }
+
+
+  Future<List<String>> fetchPolls() async{
+    String? token = await storage.read(key: 'token');
+
+    final url = Uri.parse('${apiKey}getPollingStation');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Fetched info successfully: ${response.body}');
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+
+
+        return responseData.map<String>((data) {
+          return '${data['polling_station_id']}. PS : ${data['polling_station']}, \n \t Taluka : ${data['taluka_name']}  \n \t Address : ${data['polling_address']}';
+        }).toList();
+
+
+      } else {
+        print('Fetch failed: ${response.statusCode} - ${response.body}');
+
+        return [];
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+
+      return [];
+
+    }
+  }
+
+
   Future<void> fetchPollingStation() async{
-    String? token = await storage.read(key: 'authToken');
+    String? token = await storage.read(key: 'token');
 
     final url = Uri.parse('${apiKey}getPollingStation');
 
@@ -71,6 +152,7 @@ class _UserPageState extends State<UserPage> {
           }).toList();
         });
 
+
       } else {
         print('Fetch failed: ${response.statusCode} - ${response.body}');
       }
@@ -80,7 +162,7 @@ class _UserPageState extends State<UserPage> {
   }
 
   Future<void> authenticateToken() async {
-    String? token = await storage.read(key: 'authToken');
+    String? token = await storage.read(key: 'token');
 
     final url = Uri.parse('${apiKey}getPollingStation');
 
@@ -97,9 +179,9 @@ class _UserPageState extends State<UserPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Login successful: ${response.body}');
+        // print('Login successful: ${response.body}');
         final responseData = jsonDecode(response.body);
-        print('admin thing is this value : '+responseData['isAdmin']);
+        // print('admin thing is this value : '+responseData['isAdmin']);
 
         setState(() {
           isAdmin = responseData['isAdmin'] == true || responseData['isAdmin'] == 'true';
@@ -121,13 +203,8 @@ class _UserPageState extends State<UserPage> {
 
 
 
-
-
-
-
   Future<void> registerCamera(modelNumber,pollingStation) async{
-    String? token = await storage.read(key: 'authToken');
-
+    String? token = await storage.read(key: 'token');
     final url = Uri.parse('${apiKey}registerCamera');
     final body = jsonEncode({
       'number': modelNumber,
@@ -145,7 +222,7 @@ class _UserPageState extends State<UserPage> {
 
       if (response.statusCode == 200) {
         print('Registered camera successfully: ${response.body}');
-
+        serialNumberController.text='';
 
       } else {
         print('Fetch failed: ${response.statusCode} - ${response.body}');
@@ -163,6 +240,8 @@ class _UserPageState extends State<UserPage> {
     super.initState();
     authenticateToken();
     fetchInfo();
+    cameraList=fetchCameras();
+    pollsList=fetchPolls();
     _requestCameraPermission();
 
   }
@@ -191,9 +270,46 @@ class _UserPageState extends State<UserPage> {
               floating: true,
               pinned:false,
               centerTitle: true,
-              title: Text("Apex-Live : $isAdmin"),
+              title: Text("Apex-Live : ${isAdmin?"admin":"user"}"),
             ),
+            SliverToBoxAdapter(
+              child:Column(
+                children: [
+                    FutureBuilder(
+                        future: cameraList,
+                        builder: (context,snapshot){
+                          if(snapshot.connectionState==ConnectionState.done){
+                            return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context,index){
+                                String item = snapshot.data![index];
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 20,vertical: 7),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 10,vertical:10),
+                                      child: Text(item),
+                                    ),
+                                  ),
+                                );
+                            });
+                          }else{
+                            return CircularProgressIndicator(
 
+                            );
+                          }
+
+                        }
+                    )
+                ],
+              )
+            ),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -324,6 +440,7 @@ class _UserPageState extends State<UserPage> {
             ):Container(),
         bottomNavigationBar: BottomNavigationBar(
           elevation: 20,
+          backgroundColor: Colors.white,
           showSelectedLabels: true,
           showUnselectedLabels: false,
           currentIndex: bottomNavIndex,
@@ -351,43 +468,18 @@ class _UserPageState extends State<UserPage> {
               ),
             ),
 
-            BottomNavigationBarItem(
-              // backgroundColor: Colors.yellow,
-              icon: Icon(
-                  Icons.how_to_vote_rounded,
-                  size:35
-              ),
-              label: "Polling Station",
-              activeIcon: Icon(
-                  Icons.how_to_vote_rounded,
-                  size:40
 
-              ),
-            ),
-            BottomNavigationBarItem(
-              // backgroundColor: Colors.purpleAccent,
-              icon: Icon(
-                  Icons.person,
-                  size:35
-              ),
-              label: "Employees",
-              activeIcon: Icon(
-                  Icons.person,
-                  size:40
-              ),
-            ),
 
             BottomNavigationBarItem(
               // backgroundColor: Colors.red,
               icon: Icon(
-                  Icons.location_on_rounded,
+                  Icons.how_to_vote_rounded,
                   size:35
               ),
-              label: "Taluka",
+              label: "Polling",
               activeIcon: Icon(
-                  Icons.location_on_rounded,
+                  Icons.how_to_vote_rounded,
                   size:40
-
               ),
             ),
           ],
