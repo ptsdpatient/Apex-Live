@@ -276,7 +276,7 @@ class _UserPageState extends State<UserPage> {
               child:Column(
                 children: [
                     FutureBuilder(
-                        future: cameraList,
+                        future:bottomNavIndex==0? cameraList:pollsList,
                         builder: (context,snapshot){
                           if(snapshot.connectionState==ConnectionState.done){
                             return ListView.builder(
