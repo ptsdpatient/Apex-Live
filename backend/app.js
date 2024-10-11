@@ -5,7 +5,7 @@ const app = express();
 const port = process.env.ADMIN_PORT;
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
-const secretKey='apex_live'
+const secretKey='apex_live_auth'
 
 
 let index=0
@@ -16,6 +16,7 @@ app.use(cors())
 
 
 function authenticateToken(req, res, next) {
+    console.log("authenticating")
     const authHeader = req.headers['authorization'];
     let token = authHeader && authHeader.split(' ')[1];
     if (!token) {
@@ -188,7 +189,7 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
             cameras.id AS "camera_id",
             cameras.serial_number AS "serial_number",
             taluka.taluka AS "taluka_name",
-            cameras.stream_url AS "stream_url",
+          
             polling_stations.polling_station AS "polling_station",
             employees.full_name AS "operator_name",
             employees.phone_number AS "operator_phone",
@@ -289,8 +290,8 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
         }
 
         const result = await pool.query(
-            `INSERT INTO cameras (serial_number, stream_url, PS, is_active) VALUES ($1, $2, $3, $4) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
-            [number, `rmtp://122.170.240.142:1935/live/${number}`,poll_id.rows[0].id ,false]
+            `INSERT INTO cameras (serial_number, PS, is_active) VALUES ($1, $2, $3) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
+            [number,poll_id.rows[0].id ,false]
         );
         if(result.rows.length > 0){
             const serial_number = result.rows[0].serial_number;

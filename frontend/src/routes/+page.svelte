@@ -1,21 +1,14 @@
-
 <script>
-
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-
-
     let url='http://localhost:2000'
     let token
-
     let interval
     let port=8000
     let ip='localhost'
-
     const getToken = () =>{
     return localStorage.getItem('authToken')
     }
-
     let showingCamera=false
     let showCameraSerialNumber=''
     let showCameraElement
@@ -41,7 +34,6 @@
             r:"2",
             c:"3"
         },
-       
         {
             r:"3",
             c:"4"
@@ -69,7 +61,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/live/${camera.serial_number}/index.m3u8`;
+        const sourceUrl = `http://${ip}:${port}/hls/${camera.serial_number}.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         

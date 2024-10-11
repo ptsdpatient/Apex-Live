@@ -32,7 +32,7 @@ class _UserPageState extends State<UserPage> {
   String? selectedPollingStationId;
   String? pollingStationId;
   bool isDropdownOpen = false;
-  List<String> pollingStationIdList=['Select polling station','Nigga!!!'];
+  List<String> pollingStationIdList=['Select polling station',''];
 
 
 
@@ -41,7 +41,7 @@ class _UserPageState extends State<UserPage> {
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://192.168.129.104:2000/";
+  String apiKey="http://localhost:2000/";
 
   void fetchInfo(){
     fetchPollingStation();
@@ -82,9 +82,12 @@ class _UserPageState extends State<UserPage> {
   Future<void> authenticateToken() async {
     String? token = await storage.read(key: 'authToken');
 
-    final url = Uri.parse(apiKey+'authenticateToken');
+    final url = Uri.parse('${apiKey}getPollingStation');
 
     try {
+      if (token==null){
+        Navigator.pushNamed(context, '/login');
+      }
       final response = await http.get(
         url,
         headers: {
@@ -96,10 +99,15 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         print('Login successful: ${response.body}');
         final responseData = jsonDecode(response.body);
+        print('admin thing is this value : '+responseData['isAdmin']);
 
         setState(() {
-          isAdmin = responseData['isAdmin'];
+          isAdmin = responseData['isAdmin'] == true || responseData['isAdmin'] == 'true';
         });
+
+
+
+        print('admin is $isAdmin');
 
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
@@ -182,14 +190,15 @@ class _UserPageState extends State<UserPage> {
               automaticallyImplyLeading: false,
               floating: true,
               pinned:false,
-              title: Text("nigga"),
+              centerTitle: true,
+              title: Text("Apex-Live : $isAdmin"),
             ),
 
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: isAdmin?
-
+        floatingActionButton:
+            isAdmin?
             FloatingActionButton.large(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -312,7 +321,7 @@ class _UserPageState extends State<UserPage> {
                     });
               },
               child:const Icon(Icons.add_a_photo,size:45),
-            ) :Container(),
+            ):Container(),
         bottomNavigationBar: BottomNavigationBar(
           elevation: 20,
           showSelectedLabels: true,

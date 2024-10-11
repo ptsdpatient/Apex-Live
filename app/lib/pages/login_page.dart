@@ -19,7 +19,7 @@ class LoginPage extends StatefulWidget{
 class _LoginPageState extends State<LoginPage>{
   TextEditingController username = TextEditingController(),password=TextEditingController();
 
-  String apiKey="http://192.168.1.6:2000/";
+  String apiKey="http://192.168.1.11:2000/";
 
   @override
   void initState() {
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage>{
   }
 
   Future<void> authenticateToken() async {
-    String? token = await storage.read(key: 'authToken');
+    String? token = await storage.read(key: 'token');
 
     final url = Uri.parse(apiKey+'authenticateToken');
 
