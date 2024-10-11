@@ -104,8 +104,8 @@ class _LoginPageState extends State<LoginPage>{
            child:Column(
               children: [
                   Padding(
-                    padding:const EdgeInsets.symmetric(horizontal: 20,vertical: 30),
-                    child: Image.asset('images/icon.jpg'),
+                    padding:const EdgeInsets.symmetric(horizontal: 40,vertical: 60),
+                    child: Image.asset('images/icon.png'),
                   ),
                   Input(
                     controller: username,
