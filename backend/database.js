@@ -4,7 +4,8 @@ const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'apex_live',
-    password: 'sus',
+    password: 'sus', //development
+    // password:'',  //production
     port: 5432, 
 });
 

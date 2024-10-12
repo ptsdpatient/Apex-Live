@@ -353,8 +353,9 @@ app.post('/registerTaluka',authenticateToken,async (req,res)=>{
 
 
 app.post('/login', async (req, res) => {
-    console.log("login initiated")
     const { name, password } = req.body;
+
+    console.log("login initiated",name,password)
 
     if (!name || !password) {
         console.log('-> Missing name or password');

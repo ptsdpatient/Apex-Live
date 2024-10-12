@@ -1,6 +1,8 @@
 <script>
     import { onMount } from 'svelte';
-    let url = 'http://apex-computers.live:2000';
+    // let url = 'http://apex-computers.live:2000';
+    let url ='http://192.168.1.15:2000'
+
     let username = '';
     let password = '';
 
@@ -41,8 +43,8 @@
 </script>
 
 <div class="flex flex-row justify-between w-full h-full bg-gray-200" style="width:100vw;height:100vh">
-    <div class="w-2/3 flex flex-row justify-center h-full">
-        <img src="./icon.jpg" alt="">
+    <div class="w-2/3 flex flex-row justify-center h-3/4 m-auto">
+        <img src="./icon.png" alt="">
     </div>
     <div class="flex flex-col py-10  justify-center my-auto mx-20 w-1/3 gap-3 text-2xl my-10 bg-gray-100 rounded-xl">
         <div class="ml-10 mt-5 my-2">Username:</div>

@@ -19,7 +19,10 @@ class LoginPage extends StatefulWidget{
 class _LoginPageState extends State<LoginPage>{
   TextEditingController username = TextEditingController(),password=TextEditingController();
 
-  String apiKey="http://apex-computers.live:2000/";
+  // String apiKey="http://apex-computers.live:2000/";
+
+  String apiKey="http://192.168.1.15:2000/";
+
 
   @override
   void initState() {
@@ -48,6 +51,7 @@ class _LoginPageState extends State<LoginPage>{
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
         removeToken();
+        Navigator.pushNamed(context, '/login');
       }
     } catch (error) {
       print('Error occurred: $error');
@@ -104,8 +108,11 @@ class _LoginPageState extends State<LoginPage>{
            child:Column(
               children: [
                   Padding(
-                    padding:const EdgeInsets.symmetric(horizontal: 40,vertical: 60),
-                    child: Image.asset('images/icon.png'),
+                    padding:const EdgeInsets.only(top: 80,bottom: 30),
+                    child: Container(
+                      height: 300,
+                      child: Image.asset('images/icon.png'),
+                    ),
                   ),
                   Input(
                     controller: username,

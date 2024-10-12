@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:cherry_toast/cherry_toast.dart';
+import 'package:cherry_toast/resources/arrays.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -43,10 +45,34 @@ class _UserPageState extends State<UserPage> {
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://apex-computers.live:2000/";
+  // String apiKey="http://apex-computers.live:2000/";
+
+  String apiKey="http://192.168.1.15:2000/";
+
+  void showNotification(String message){
+    CherryToast.success(
+        iconWidget: Icon(Icons.done_outlined,color:Colors.green,size:45),
+        // displayIcon: false,
+        backgroundColor: Colors.white,
+        displayCloseButton: false,
+        animationType: AnimationType.fromTop,
+        animationCurve: Curves.easeInOutCirc,
+        toastDuration: Duration(milliseconds: 1750),
+
+        toastPosition: Position.top,
+        description: Text(message,style: TextStyle(color:Colors.black),),
+
+        title:  Text("Success!",
+            style: TextStyle(color: Colors.black))
+
+    ).show(context);
+  }
+
 
   void fetchInfo(){
     fetchPollingStation();
+    cameraList=fetchCameras();
+    pollsList=fetchPolls();
   }
 
 
@@ -222,8 +248,7 @@ class _UserPageState extends State<UserPage> {
 
       if (response.statusCode == 200) {
         print('Registered camera successfully: ${response.body}');
-        serialNumberController.text='';
-
+        showNotification("Camera Registered successfully! ${serialNumberController.text}");
       } else {
         print('Fetch failed: ${response.statusCode} - ${response.body}');
       }
@@ -240,8 +265,8 @@ class _UserPageState extends State<UserPage> {
     super.initState();
     authenticateToken();
     fetchInfo();
-    cameraList=fetchCameras();
-    pollsList=fetchPolls();
+    // cameraList=fetchCameras();
+    // pollsList=fetchPolls();
     _requestCameraPermission();
 
   }
@@ -267,10 +292,33 @@ class _UserPageState extends State<UserPage> {
               backgroundColor: Colors.white,
               elevation: 20,
               automaticallyImplyLeading: false,
+              leading: IconButton(
+                  onPressed: (){
+                    Navigator.pushNamed(context, '/login');
+                    removeToken();
+                    },
+                  icon: Padding(
+                    padding: EdgeInsets.only(left:15),
+                    child: Icon(Icons.logout_rounded,size:35,color:Colors.blue),
+                  )
+              ),
               floating: true,
               pinned:false,
+
               centerTitle: true,
-              title: Text("Apex-Live : ${isAdmin?"admin":"user"}"),
+              title: Text(bottomNavIndex==0?"Cameras":"Polling Stations"),
+              actions: [
+                IconButton(
+                    onPressed: (){
+                      fetchInfo();
+                      showNotification("Information Fetched");
+                    },
+                    icon: Padding(
+                      padding: EdgeInsets.only(right:15),
+                      child: Icon(Icons.refresh_rounded,size:35,color:Colors.blue),
+                    )
+                )
+              ],
             ),
             SliverToBoxAdapter(
               child:Column(
@@ -300,8 +348,10 @@ class _UserPageState extends State<UserPage> {
                                 );
                             });
                           }else{
-                            return CircularProgressIndicator(
+                            return Padding(padding: EdgeInsets.symmetric(vertical: 40),
+                              child: CircularProgressIndicator(
 
+                              ),
                             );
                           }
 
