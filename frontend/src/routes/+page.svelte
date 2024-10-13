@@ -1,11 +1,11 @@
 <script>
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-    let url='http://localhost:2000'
+    let url='http://apex-computers.live:2000'
     let token
     let interval
     let port=8080
-    let ip='localhost'
+    let ip='apex-computers.live'
     const getToken = () =>{
     return localStorage.getItem('authToken')
     }
@@ -172,7 +172,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/hls/${camera.serial_number}.m3u8`;
+        const sourceUrl = `http://${ip}:${port}/hls/${serialNumber}.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         

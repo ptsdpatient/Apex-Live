@@ -2,7 +2,7 @@
     import {onMount} from 'svelte'
     let username = '';
     let password = '';
-    let url='http://localhost:2000'
+    let url='http://apex-computers.live:2000'
 
     async function loginUser() {
         if (!username || !password) {
