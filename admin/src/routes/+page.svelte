@@ -33,7 +33,7 @@
             }
         } catch (error) {
             console.error('Error during token authentication:', error);
-            alert("An error occurred while authenticating the token.");
+            alert("An error occurred while authenticating the token." + error);
         }
     }
 

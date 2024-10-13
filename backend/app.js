@@ -13,10 +13,7 @@ let index=0
 
 app.use(express.json());
 app.options("*",cors());
-app.use(cors({
-    origin: 'http://apex-computers.live:5173',
-    methods: ['GET','POST','PUT','DELETE']
-}))
+app.use(cors())
 
 
 function authenticateToken(req, res, next) {
