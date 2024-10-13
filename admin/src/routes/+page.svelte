@@ -14,7 +14,7 @@
             const response = await fetch(`${url}/authenticateToken`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Send token in authorization header
+                    'Authorization': `Bearer ${token}`, 
                     'Content-Type': 'application/json'
                 }
             });
@@ -24,7 +24,8 @@
             if (response.ok) {
                 // Token is valid; you can proceed to the user page or show user data
                 console.log('Authenticated user:', data);
-                window.location=data.error?'/login':'/user'
+                if(data.error)window.location='/login'
+                window.location='/user'
                
             } else {
                 alert(data.error || 'Token is invalid');
@@ -35,6 +36,7 @@
             alert("An error occurred while authenticating the token.");
         }
     }
+
 
     onMount(() => {
         authenticateToken();

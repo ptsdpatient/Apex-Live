@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage>{
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
         removeToken();
-        Navigator.pushNamed(context, '/login');
       }
     } catch (error) {
       print('Error occurred: $error');
