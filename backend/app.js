@@ -12,7 +12,11 @@ let index=0
 
 
 app.use(express.json());
-app.use(cors())
+app.options("*",cors());
+app.use(cors({
+    origin: 'http://apex-computers.live:5173',
+    methods: ['GET','POST','PUT','DELETE']
+}))
 
 
 function authenticateToken(req, res, next) {
@@ -394,6 +398,6 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://localhost:${port}\n\x1b[37m`);
+app.listen(2000,'0.0.0.0', () => {
+    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://0.0.0.0:${2000}\n\x1b[37m`);
 });
