@@ -266,7 +266,7 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
         );
 
         const PS_address = result.rows[0].polling_station;
-        res.status(201).json({ message: 'Employee registered successfully.', name: PS_address,done:true });
+        res.status(200).json({ message: 'Employee registered successfully.', name: PS_address,done:true });
         console.log("$ Polling Station registered with PS name : " + PS_address)
     }catch(e){
         console.log("error occured : "+e)
@@ -300,7 +300,7 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
         );
         if(result.rows.length > 0){
             const serial_number = result.rows[0].serial_number;
-            res.status(201).json({ message: 'Camera registered successfully.', name: serial_number,done:true });
+            res.status(200).json({ message: 'Camera registered successfully.', name: serial_number,done:true });
             console.log("$ Camera registered with model name : " + serial_number)
         }else res.status(404).json({done:false})
     }catch(e){
@@ -322,7 +322,7 @@ app.post('/registerEmployee',authenticateToken,async (req,res)=>{
         );
 
         const employeeName = result.rows[0].full_name;
-        res.status(201).json({ message: 'Employee registered successfully.', name: employeeName,done:true });
+        res.status(200).json({ message: 'Employee registered successfully.', name: employeeName,done:true });
         console.log("$ User registered with employee name : " + employeeName)
     }catch(e){
         console.log("error occured : "+e)
@@ -343,7 +343,7 @@ app.post('/registerTaluka',authenticateToken,async (req,res)=>{
         );
 
         const talukaName = result.rows[0].taluka;
-        res.status(201).json({ message: 'Employee registered successfully.', name: talukaName,done:true });
+        res.status(200).json({ message: 'Employee registered successfully.', name: talukaName,done:true });
         console.log("[+] Taluka registered with name : " + talukaName)
     }catch(e){
         console.log("error occured : "+e)
