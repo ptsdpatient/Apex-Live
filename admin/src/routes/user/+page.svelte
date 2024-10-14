@@ -47,8 +47,8 @@
 
 
 
-    let url='http://apex-computers.live:2000'
-    // let url ='http://192.168.1.15:2000'
+    // let url='http://apex-computers.live:2000'
+    let url ='http://localhost:2000'
 
     let token
 

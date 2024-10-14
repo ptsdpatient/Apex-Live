@@ -1,7 +1,8 @@
 <script>
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-    let url='http://apex-computers.live:2000'
+    // let url='http://apex-computers.live:2000'
+    let url='http://localhost:2000'
     let token
     let interval
     let port=8080
@@ -305,9 +306,8 @@ onMount(()=>{
     <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
         <div class="hover:cursor-default w-full h-full  relative">
             <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
-                <div class="w-1/12 absolute top-0 left-0 z-40 h-full bg-black">
-                </div>
-                    <div class="rounded-lg group  h-full relative flex-grow w-10/12 mx-auto h-full">
+               
+                    <div class="rounded-lg group  h-full relative flex-grow w-full mx-auto h-full">
                         <div class="w-full bg-gray-900 relative text-xl">
 
                             <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
@@ -317,12 +317,11 @@ onMount(()=>{
                                 </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full bg-gray-800" id='showCameraID'>
+                        <video autoplay class="h-full w-full bg-gray-800" style="width:100%;height:100%" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
-                    <div class="w-1/12 absolute top-0 right-0 z-40 h-full bg-black">
-                    </div>
+                 
                 <!-- <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button> -->
             </div>
         </div>
@@ -402,7 +401,7 @@ onMount(()=>{
             transform:translate(20%);
         }
         100%{
-            transform:translate(-100%);
+            transform:translate(-150%);
         }
     }
 </style>
