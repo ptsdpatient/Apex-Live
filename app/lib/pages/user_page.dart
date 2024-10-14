@@ -97,7 +97,7 @@ class _UserPageState extends State<UserPage> {
 
 
         return responseData.map<String>((data) {
-          return '${data['camera_id']}. CID : ${data['serial_number']}, \n \t PS : ${data['polling_station']}';
+          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station']}';
         }).toList();
 
 
@@ -136,7 +136,7 @@ class _UserPageState extends State<UserPage> {
 
 
         return responseData.map<String>((data) {
-          return '${data['polling_station_id']}. PS : ${data['polling_station']}, \n \t Taluka : ${data['taluka_name']}  \n \t Address : ${data['polling_address']}';
+          return ' PS : ${data['polling_station']}, \n \t Taluka : ${data['taluka_name']}  \n \t Address : ${data['polling_address']}';
         }).toList();
 
 
@@ -249,6 +249,9 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         print('Registered camera successfully: ${response.body}');
         showNotification("Camera Registered successfully! ${serialNumberController.text}");
+        fetchInfo();
+        serialNumberController.clear();
+        serialNumberController.text='';
       } else {
         print('Fetch failed: ${response.statusCode} - ${response.body}');
       }
@@ -342,7 +345,7 @@ class _UserPageState extends State<UserPage> {
                                     ),
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 10,vertical:10),
-                                      child: Text(item),
+                                      child: Text('\t$index. $item'),
                                     ),
                                   ),
                                 );
@@ -369,6 +372,8 @@ class _UserPageState extends State<UserPage> {
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               onPressed: () {
+                serialNumberController.clear();
+                serialNumberController.text='';
                 showModalBottomSheet(
                     context: context,
                     isScrollControlled:true,
