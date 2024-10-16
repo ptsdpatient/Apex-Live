@@ -2,7 +2,7 @@ const express = require('express');
 const pool = require('./database'); 
 require('dotenv').config();
 const app = express();
-const port = process.env.ADMIN_PORT;
+const port = 2000;
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
 const secretKey='apex_live_auth'
@@ -191,11 +191,9 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
             cameras.id AS "camera_id",
             cameras.serial_number AS "serial_number",
             taluka.taluka AS "taluka_name",
-          
             polling_stations.polling_station AS "polling_station",
             employees.full_name AS "operator_name",
             employees.phone_number AS "operator_phone",
-            cameras.is_active AS "is_active",
             polling_stations.polling_address AS "polling_address"
             FROM cameras
             LEFT JOIN polling_stations ON cameras.PS = polling_stations.id
@@ -210,7 +208,6 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
             visible: false 
         }));
 
-        // console.log(modifiedRows)
         res.status(200).json(modifiedRows);
 
     }catch(err){

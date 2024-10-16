@@ -5,6 +5,9 @@
     let viewMode = 0;
     let isAdmin=false
 
+    let filterTaluka='All'
+    let filterPollingStation='All'
+
     let editItem=5
 
     let talukaName=''    
@@ -135,6 +138,8 @@
             }
 
             cameraList = await response.json();
+            filterCameraList()
+
         } catch (error) {
             console.error('Error fetching cameras:', error);
             errorMessage = 'An error occurred while fetching cameras.';
@@ -526,6 +531,29 @@
         editReference=station.polling_station_id
     }
 
+
+    function downloadSheet(){
+
+    }
+
+    function filterCameraList(){   
+        if(filterTaluka==="All" && filterPollingStation==="All"){
+            cameraList = cameraList.map((camera, index) => {
+            camera.visible =true                  
+            return camera;
+            })
+        }
+        if(filterTaluka!=="All") cameraList = cameraList.map((camera, index) => {
+                camera.visible =(camera.taluka_name === filterTaluka)                  
+                return camera;
+        });
+        if(filterPollingStation!=="All")  cameraList = cameraList.map((camera, index) => {
+            camera.visible =(camera.polling_station === filterPollingStation)                  
+            return camera;
+        });        
+    }
+
+
     function openTaluka(taluka){
         editTalukaName=taluka.taluka
         editItem=3;
@@ -685,46 +713,77 @@
                 <button on:click={()=>{viewMode=4}} class="bg-{viewMode==4?"red-500":"transparent"} px-7 order-4 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==4?"white":"black"} transition-all transform duration-300 {viewMode==4?"hover:bg-red-500  hover:shadow-xl hover:scale-105 text-white":""}">Talukas</button>
             </div>
             
-            <button on:click={getInfo} class="bg-pink-500 mr-10 px-7 order-4 py-2 rounded-xl transform hover:scale-105 duration-300 transition-all text-white transition-all transform duration-300 hover:bg-pink-500  hover:shadow-xl hover:scale-105 text-white">↻ fetch data</button>
-
+            <div>
+                <button on:click={downloadSheet} class="bg-green-500 mr-10 px-7 order-4 py-2 rounded-xl transform hover:scale-105 duration-300 transition-all text-white transition-all transform duration-300 hover:bg-green-400  hover:shadow-xl hover:scale-105 text-white">📥download sheet</button>
+                <button on:click={getInfo} class="bg-pink-500 mr-10 px-7 order-4 py-2 rounded-xl transform hover:scale-105 duration-300 transition-all text-white transition-all transform duration-300 hover:bg-pink-500  hover:shadow-xl hover:scale-105 text-white">↻ fetch data</button>
+            </div>
            
         </div>
 
         <div class="w-full flex flex-row h-auto mt-24 px-12">
-            <div class="w-full rounded-xl  flex flex-col h-auto text-2xl mt-10 ">
+            <div class="w-full rounded-xl  flex flex-col h-auto text-2xl mt-6 ">
                 {#if viewMode==0}
                     
                 
-                <div class="overflow-x-auto rounded-xl">
-                    <table class="min-w-full bg-white shadow-md rounded-lg">
-                      <thead>
-                        <tr class="bg-gray-800 text-white text-left">
-                          <th class="py-2 px-4">Camera ID</th>
-                          <th class="py-2 px-4">Serial Number</th>
-                          <th class="py-2 px-4">Taluka Name</th>
-                          <th class="py-2 px-4">Polling Station</th>
-                          <th class="py-2 px-4">Operator</th>
-                          <th class="py-2 px-4">Operator Mobile Number</th>
-                          <th class="py-2 px-4">Is Active</th>
-                          <th class="py-2 px-4">Polling Station Address</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {#each cameraList as camera}
-                          <tr on:click={()=>{if(isAdmin)openCamera(camera)}} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-2 px-4">{camera.camera_id}</td>
-                            <td class="py-2 px-4">{camera.serial_number}</td>
-                            <td class="py-2 px-4">{camera.taluka_name}</td>
-                            <td class="py-2 px-4">{camera.polling_station}</td>
-                            <td class="py-2 px-4">{camera.operator_name}</td>
-                            <td class="py-2 px-4">{camera.operator_phone}</td>
-                            <td class="py-2 px-4">{camera.is_active ? 'Active' : 'Inactive'}</td>
-                            <td class="py-2 px-4">{camera.polling_address}</td>
-                          </tr>
-                     
-                        {/each}
-                      </tbody>
-                    </table>
+                <div class="overflow-x-auto rounded-xl flex flex-col">
+                    <div class="flex flex-row justify-between mb-5">
+                        <div class="flex text-2xl flex-row gap-10 justify-around whitespace-nowrap items-center">                
+                            <div>Taluka : </div>
+                            <select bind:value={filterTaluka} on:change={filterCameraList} class=" px-3 py-2 rounded-xl">
+                                <option value="All">
+                                    All
+                                </option>
+                                {#each talukasList as taluka}
+                                    <option value={taluka.taluka}>
+                                        {taluka.taluka}
+                                    </option>
+                                {/each}
+                            </select>   
+                            <!-- ikde tak -->
+
+                            <div>Polling Station : </div>
+                            <select bind:value={filterPollingStation} on:change={filterCameraList} class="px-3 py-2 rounded-xl">
+                                <option value="All">
+                                    All
+                                </option>
+                                {#each pollingStationList as poll}
+                                    <option value={poll.polling_station}>
+                                        {poll.polling_station}
+                                    </option>
+                                {/each}
+                            </select>     
+                        </div>
+                    </div>
+                    <div class="w-full h-full rounded-lg">
+                        <table class="min-w-full bg-white shadow-md">
+                            <thead>
+                              <tr class="bg-gray-800 text-white text-left">
+                                <th class="py-2 px-4">Camera ID</th>
+                                <th class="py-2 px-4">Serial Number</th>
+                                <th class="py-2 px-4">Polling Station</th>
+                                <th class="py-2 px-4">Taluka Name</th>
+                                <th class="py-2 px-4">Operator</th>
+                                <th class="py-2 px-4">Operator Mobile Number</th>
+                                <th class="py-2 px-4">Polling Station Address</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {#each cameraList as camera, camera_index }
+                                <tr on:click={()=>{if(isAdmin)openCamera(camera)}} class="{camera.visible?"":"hidden"} hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
+                                  <td class="py-2 px-4">{camera_index+1}</td>
+                                  <td class="py-2 px-4">{camera.serial_number}</td>
+                                  <td class="py-2 px-4">{camera.polling_station}</td>
+      
+                                  <td class="py-2 px-4">{camera.taluka_name}</td>
+                                  <td class="py-2 px-4">{camera.operator_name}</td>
+                                  <td class="py-2 px-4">{camera.operator_phone}</td>
+                                  <td class="py-2 px-4">{camera.polling_address}</td>
+                                </tr>
+                           
+                              {/each}
+                            </tbody>
+                          </table>
+                    </div>
                   </div>
                   
 
@@ -831,9 +890,9 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {#each employeeList as employee (employee.id)}
+                        {#each employeeList as employee,employee_id (employee.id)}
                           <tr on:click={()=>{if(isAdmin)openEmployee(employee)}} class="border-b border-gray-200 hover:bg-gray-100 hover:cursor-pointer">
-                            <td class="py-2 px-4">{employee.id}</td>
+                            <td class="py-2 px-4">{employee_id+1}</td>
                             <td class="py-2 px-4">{employee.full_name}</td>
                             <td class="py-2 px-4">{employee.phone_number}</td>
                             <td class="py-2 px-4">{employee.is_admin ? 'Admin' : 'User'}</td>
@@ -859,9 +918,9 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {#each pollingStationList as station (station.polling_station_id)}
+                        {#each pollingStationList as station,station_index (station.polling_station_id)}
                           <tr on:click={()=>{if(isAdmin)openPollingStation(station)}} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-2 px-4">{station.polling_station_id}</td>
+                            <td class="py-2 px-4">{station_index+1}</td>
                             <td class="py-2 px-4">{station.polling_station}</td>
                             <td class="py-2 px-4">{station.polling_address}</td>
                             <td class="py-2 px-4">{station.taluka_name}</td>
@@ -884,10 +943,10 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {#each talukasList as taluka (taluka.id)}
+                        {#each talukasList as taluka,taluka_index (taluka.id)}
 
                           <tr on:click={()=>{if(isAdmin)openTaluka(taluka)}} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-2 px-4">{taluka.id}</td>
+                            <td class="py-2 px-4">{taluka_index+1}</td>
                             <td class="py-2 px-4">{taluka.taluka}</td>
                           </tr>
                         
