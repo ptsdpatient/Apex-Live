@@ -1,6 +1,8 @@
 <script>
     import {onMount} from 'svelte'
     import Swal from 'sweetalert2';
+    import * as XLSX from "xlsx";
+
 
     let viewMode = 0;
     let isAdmin=false
@@ -534,6 +536,25 @@
 
     function downloadSheet(){
 
+        const visibleCameras = cameraList.filter(camera => camera.visible);
+
+        const dataToDownload = visibleCameras.map((camera,index) => ({
+            "Sr.No" : (index+1),
+            "Camera ID": camera.serial_number,
+            "Polling Station": camera.polling_station,
+            "Taluka Name": camera.taluka_name,
+            "Operator": camera.operator_name,
+            "Operator Mobile" : camera.operator_phone,
+            "Address" : camera.polling_address
+            
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToDownload);
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+        XLSX.writeFile(workbook, `cameraList-${filterTaluka}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
     }
 
     function filterCameraList(){   
@@ -543,12 +564,14 @@
             return camera;
             })
         }
+
         if(filterTaluka!=="All") cameraList = cameraList.map((camera, index) => {
-                camera.visible =(camera.taluka_name === filterTaluka)                  
-                return camera;
+            camera.visible =(camera.taluka_name === filterTaluka)                  
+            return camera;
         });
+
         if(filterPollingStation!=="All")  cameraList = cameraList.map((camera, index) => {
-            camera.visible =(camera.polling_station === filterPollingStation)                  
+            if(camera.visible) camera.visible =(camera.polling_station === filterPollingStation)                  
             return camera;
         });        
     }
@@ -911,7 +934,7 @@
                       <thead>
                         <tr class="bg-gray-800 text-white text-left">
                           <th class="py-2 px-4">Polling Station ID</th>
-                          <th class="py-2 px-4">Polling Station Name</th>
+                          <th class="py-2 px-4">Polling Station</th>
                           <th class="py-2 px-4">Address</th>
                           <th class="py-2 px-4">Taluka</th>
                           <th class="py-2 px-4">Operator</th>

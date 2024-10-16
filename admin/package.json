@@ -16,6 +16,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"sweetalert2": "^11.14.1"
+		"sweetalert2": "^11.14.1",
+		"xlsx": "^0.18.5"
 	}
 }

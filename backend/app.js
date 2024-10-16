@@ -259,7 +259,7 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
        
         const result = await pool.query(
             'INSERT INTO polling_stations (polling_station, polling_address, taluka, operator) VALUES ($1, $2, $3, $4) RETURNING polling_station',
-            [number,address,taluka_id.rows[0].id,operator_id.rows[0].id]
+            [`Polling Station ${number}`,address,taluka_id.rows[0].id,operator_id.rows[0].id]
         );
 
         const PS_address = result.rows[0].polling_station;
