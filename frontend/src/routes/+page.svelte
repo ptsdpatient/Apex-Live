@@ -394,7 +394,7 @@ onMount(()=>{
             <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
                
                     <div class="rounded-lg group  h-full relative flex-grow w-full mx-auto h-full">
-                        <div class="w-full bg-gray-900 relative text-xl">
+                        <div class="w-full bg-gray-900 relative text-xl overflow-hidden">
 
                             <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
@@ -470,7 +470,7 @@ onMount(()=>{
                         </div>
                         <div class="w-full bg-gray-900 relative text-base overflow-hidden">
 
-                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap inline-block"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
+                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap inline-block overflow-hidden"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold  ">
                                 <div class="bg-gray-900">
                                     <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 z-50 h-full">⛶</button>
