@@ -559,12 +559,7 @@
     }
 
     function filterCameraList(){   
-        // if(filterTaluka==="All" && filterPollingStation==="All"){
-        //     cameraList = cameraList.map((camera, index) => {
-        //     camera.visible =true                  
-        //     return camera;
-        //     })
-        // }
+       
         cameraList = cameraList.map(camera => {
             camera.visible = true;
             if (filterTaluka !== "All" && camera.taluka_name !== filterTaluka) {
@@ -579,20 +574,7 @@
 
             return camera;
         });
-        // if(filterTaluka!=="All") cameraList = cameraList.map((camera, index) => {
-        //     camera.visible =(camera.taluka_name === filterTaluka)                  
-        //     return camera;
-        // });
-
-        // if(filterOperator!=="All")  cameraList = cameraList.map((camera, index) => {
-        //     if(camera.visible) camera.visible =(camera.operator_name === filterOperator)                  
-        //     return camera;
-        // });
-
-        // if(filterPollingStation!=="All")  cameraList = cameraList.map((camera, index) => {
-        //     if(camera.visible) camera.visible =(camera.polling_station === filterPollingStation)                  
-        //     return camera;
-        // });        
+       
     }
 
 

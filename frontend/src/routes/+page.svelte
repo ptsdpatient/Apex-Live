@@ -98,7 +98,6 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Token is valid; you can proceed to the user page or show user data
                 console.log('Authenticated user:', data);
                 if(data.error)window.location='/login'
                
@@ -235,7 +234,6 @@ function changeSlide() {
 
     cameraIndex += cameraPerSet;
 
-    // Get the total number of visible cameras based on the filters
     let visibleCamerasCount = 0;
 
     cameraList.forEach((camera) => {
@@ -247,104 +245,31 @@ function changeSlide() {
         }
     });
 
-    // Reset cameraIndex if it exceeds the number of visible cameras
     if (cameraIndex >= visibleCamerasCount) {
-        cameraIndex = 0;  // Loop back to the beginning
+        cameraIndex = 0;  
     }
 
-    // Update the visible cameras based on the new cameraIndex
     updateVisibleCameras();
 
 
 
-    // cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
-
-    // cameraIndex += cameraPerSet;
-
-    // if(selectedTaluka==="All"){
-    //     if (cameraIndex >= cameraList.length) {
-    //         cameraIndex = 0;
-    //     }
-    // }else {
-    //     let selectedTalukaLength = 0;
-    //     cameraList.forEach((camera,index)=>{
-    //         if (camera.taluka_name === selectedTaluka) {
-    //             selectedTalukaLength++;
-    //         }
-    //     })
-    //     if(cameraIndex>=slectedTalukaLength){
-    //         cameraIndex=0
-    //     }
-    // }
-
-    // updateVisibleCameras()
+    
 }
 
 function updateVisibleCameras() {
-    // let selectedTalukaLength = 0;
-    // let selectedPollingStationLength=0
-
-    // if (selectedTaluka !== "All") {
-    //     cameraList = cameraList.map((camera, index) => {
-    //             if (camera.taluka_name === selectedTaluka) {
-    //                 selectedTalukaLength++;
-    //                 camera.visible = (selectedTalukaLength > cameraIndex && selectedTalukaLength <= (cameraIndex + cameraPerSet));
-    //             } else {
-    //                 camera.visible = false;
-    //             }
-    //         return camera;
-    //     });
-    // }
-
-    // if (selectedPollingStation !== "All") {
-    //     cameraList = cameraList.map((camera, index) => {
-    //             if (camera.polling_station === selectedPollingStation) {
-    //                 selectedPollingStationLength++;
-    //                 camera.visible = (selectedPollingStationLength > cameraIndex && selectedPollingStationLength <= (cameraIndex + cameraPerSet));
-    //             } else {
-    //                 camera.visible = false;
-    //             }
-    //         return camera;
-    //     });
-    // }
-
-    // if(selectedPollingStation==="All"){
-    //         cameraList = cameraList.map((camera, index) => {
-    //         camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
-    //         if(camera.visible&&selectedPollingStation!="All"){
-    //             camera.visible=camera.polling_station===selectedPollingStation;
-    //         }
-    //         return camera;
-    //     }
-    // );
-    // }
-
-    // if(selectedTaluka==="All"){
-    //         cameraList = cameraList.map((camera, index) => {
-    //         camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
-    //         if(camera.visible&&selectedTaluka!="All"){
-    //             camera.visible=camera.taluka_name===selectedTaluka;
-    //         }
-    //         return camera;
-    //     }
-    // );
-    // }
-
-
-
-    let visibleCount = 0; // Tracks how many cameras are visible based on the filters
+ 
+    let visibleCount = 0; 
 
     cameraList = cameraList.map((camera, index) => {
-    // Determine if the camera matches the taluka and polling station filters
+    
     const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
     const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station === selectedPollingStation;
 
-    // Set camera visibility based on filters and current camera set (cameraPerSet)
     if (matchesTaluka && matchesPollingStation) {
         visibleCount++;
         camera.visible = (visibleCount > cameraIndex && visibleCount <= (cameraIndex + cameraPerSet));
     } else {
-        camera.visible = false; // Hide camera if it doesn't match the filters
+        camera.visible = false; 
     }
 
     return camera;
@@ -408,14 +333,12 @@ onMount(()=>{
                         </video>
                     </div>
                  
-                <!-- <button on:click={()=>{showingCamera=false}} class=" hover:cursor-pointer text-6xl text-white p-5">🖵</button> -->
             </div>
         </div>
     </button>
     
     <div class="w-full mx-auto h-full flex flex-col bg-gray-900">
         
-        <!-- ye button ke liye hai -->
          
         <div class="w-full px-10 flex transition-all duration-300 flex-row text-xl p-2 justify-between items-center align-center" style="height:14svh">
                         
