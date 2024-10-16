@@ -328,7 +328,7 @@ onMount(()=>{
                                 </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full bg-gray-800" style="width:100%;height:100%" id='showCameraID'>
+                        <video autoplay class="h-full w-full bg-gray-800" style="width:100%;" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
@@ -387,7 +387,7 @@ onMount(()=>{
                     <div class="text-white bg-gray-800 {camera.visible?"flex":"hidden"} border-2 border-gray-700  flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
                         <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
                            
-                            <video autoplay class="h-full w-full" id='{camera.serial_number}'>
+                            <video autoplay class="h-full w-full" style="width:100%;" id='{camera.serial_number}'>
                                 <track kind="captions">
                             </video>
                         </div>
