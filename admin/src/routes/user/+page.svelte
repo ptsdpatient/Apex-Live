@@ -9,6 +9,7 @@
 
     let filterTaluka='All'
     let filterPollingStation='All'
+    let filterOperator='All'
 
     let editItem=5
 
@@ -554,26 +555,44 @@
 
         XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-        XLSX.writeFile(workbook, `cameraList-${filterTaluka}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
+        XLSX.writeFile(workbook, `cameraList-${filterTaluka}-${filterOperator}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
     }
 
     function filterCameraList(){   
-        if(filterTaluka==="All" && filterPollingStation==="All"){
-            cameraList = cameraList.map((camera, index) => {
-            camera.visible =true                  
-            return camera;
-            })
-        }
+        // if(filterTaluka==="All" && filterPollingStation==="All"){
+        //     cameraList = cameraList.map((camera, index) => {
+        //     camera.visible =true                  
+        //     return camera;
+        //     })
+        // }
+        cameraList = cameraList.map(camera => {
+            camera.visible = true;
+            if (filterTaluka !== "All" && camera.taluka_name !== filterTaluka) {
+                camera.visible = false;
+            }
+            if (filterOperator !== "All" && camera.visible && camera.operator_name !== filterOperator) {
+                camera.visible = false;
+            }
+            if (filterPollingStation !== "All" && camera.visible && camera.polling_station !== filterPollingStation) {
+                camera.visible = false;
+            }
 
-        if(filterTaluka!=="All") cameraList = cameraList.map((camera, index) => {
-            camera.visible =(camera.taluka_name === filterTaluka)                  
             return camera;
         });
+        // if(filterTaluka!=="All") cameraList = cameraList.map((camera, index) => {
+        //     camera.visible =(camera.taluka_name === filterTaluka)                  
+        //     return camera;
+        // });
 
-        if(filterPollingStation!=="All")  cameraList = cameraList.map((camera, index) => {
-            if(camera.visible) camera.visible =(camera.polling_station === filterPollingStation)                  
-            return camera;
-        });        
+        // if(filterOperator!=="All")  cameraList = cameraList.map((camera, index) => {
+        //     if(camera.visible) camera.visible =(camera.operator_name === filterOperator)                  
+        //     return camera;
+        // });
+
+        // if(filterPollingStation!=="All")  cameraList = cameraList.map((camera, index) => {
+        //     if(camera.visible) camera.visible =(camera.polling_station === filterPollingStation)                  
+        //     return camera;
+        // });        
     }
 
 
@@ -744,7 +763,7 @@
         </div>
 
         <div class="w-full flex flex-row h-auto mt-24 px-12">
-            <div class="w-full rounded-xl  flex flex-col h-auto text-2xl mt-6 ">
+            <div class="w-full rounded-xl  flex flex-col h-auto text-2xl mt-10 ">
                 {#if viewMode==0}
                     
                 
@@ -764,6 +783,16 @@
                             </select>   
                             <!-- ikde tak -->
 
+                            <div>Operator : </div>
+                            <select bind:value={filterOperator} on:change={filterCameraList} class="px-3 py-2 rounded-xl">
+                                <option value="All">
+                                    All
+                                </option>
+                                {#each employeeList as employee}
+                                    <option value={employee.full_name}>{employee.full_name}</option>
+                                {/each}
+                            </select>   
+
                             <div>Polling Station : </div>
                             <select bind:value={filterPollingStation} on:change={filterCameraList} class="px-3 py-2 rounded-xl">
                                 <option value="All">
@@ -774,7 +803,10 @@
                                         {poll.polling_station}
                                     </option>
                                 {/each}
-                            </select>     
+                            </select>    
+                            
+                            
+                            
                         </div>
                     </div>
                     <div class="w-full h-full rounded-lg">
