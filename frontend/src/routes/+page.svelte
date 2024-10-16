@@ -11,14 +11,14 @@
     return localStorage.getItem('authToken')
     }
     let showingCamera=false
-    let showCameraSerialNumber=''
-    let showCameraElement
     let showCameraPS=''
     let showCameraM=''
     let selectedTaluka='All'
+    let selectedPollingStation='All'
     let showCameraPA=''
     let cameraList=[]
     let talukaList=[]
+    let pollingStationList=[]
     let cameraIndex=0
     let selectedResolution ={
          row:"2",
@@ -50,7 +50,6 @@
 
 
     function showThisCamera(camera){
-        showCameraSerialNumber=camera.serial_number
         showingCamera=true
         showCameraPS=camera.polling_station
         showCameraM=camera.serial_number
@@ -137,6 +136,23 @@
        }
    }
 
+   async function fetchPolls() {
+       
+       try {
+           const response = await fetch(`${url}/getPollingStation`, {
+               method: 'GET',
+               headers: {
+                   'Authorization': `Bearer ${token}`,
+                   'Content-Type': 'application/json'
+               }
+           });
+
+           pollingStationList = await response.json();
+       } catch (error) {
+           console.error('Error fetching employees:', error);
+           errorMessage = 'An error occurred while fetching employees.';
+       }
+   }
 
    async function fetchTalukas() {
        
@@ -219,51 +235,120 @@ function changeSlide() {
 
     cameraIndex += cameraPerSet;
 
-    if(selectedTaluka==="All"){
-        if (cameraIndex >= cameraList.length) {
-            cameraIndex = 0;
+    // Get the total number of visible cameras based on the filters
+    let visibleCamerasCount = 0;
+
+    cameraList.forEach((camera) => {
+        const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
+        const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station === selectedPollingStation;
+
+        if (matchesTaluka && matchesPollingStation) {
+            visibleCamerasCount++;
         }
-    }else {
-        let selectedTalukaLength = 0;
-        cameraList.forEach((camera,index)=>{
-            if (camera.taluka_name === selectedTaluka) {
-                selectedTalukaLength++;
-            }
-        })
-        if(cameraIndex>=slectedTalukaLength){
-            cameraIndex=0
-        }
+    });
+
+    // Reset cameraIndex if it exceeds the number of visible cameras
+    if (cameraIndex >= visibleCamerasCount) {
+        cameraIndex = 0;  // Loop back to the beginning
     }
 
-    updateVisibleCameras()
+    // Update the visible cameras based on the new cameraIndex
+    updateVisibleCameras();
+
+
+
+    // cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col);
+
+    // cameraIndex += cameraPerSet;
+
+    // if(selectedTaluka==="All"){
+    //     if (cameraIndex >= cameraList.length) {
+    //         cameraIndex = 0;
+    //     }
+    // }else {
+    //     let selectedTalukaLength = 0;
+    //     cameraList.forEach((camera,index)=>{
+    //         if (camera.taluka_name === selectedTaluka) {
+    //             selectedTalukaLength++;
+    //         }
+    //     })
+    //     if(cameraIndex>=slectedTalukaLength){
+    //         cameraIndex=0
+    //     }
+    // }
+
+    // updateVisibleCameras()
 }
 
 function updateVisibleCameras() {
-    let selectedTalukaLength = 0;
+    // let selectedTalukaLength = 0;
+    // let selectedPollingStationLength=0
 
-    if (selectedTaluka !== "All") {
-        // cameraIndex=0;
-        cameraList = cameraList.map((camera, index) => {
-                if (camera.taluka_name === selectedTaluka) {
-                    selectedTalukaLength++;
-                    camera.visible = (selectedTalukaLength > cameraIndex && selectedTalukaLength <= (cameraIndex + cameraPerSet));
-                } else {
-                    camera.visible = false;
-                }
-            return camera;
-        });
+    // if (selectedTaluka !== "All") {
+    //     cameraList = cameraList.map((camera, index) => {
+    //             if (camera.taluka_name === selectedTaluka) {
+    //                 selectedTalukaLength++;
+    //                 camera.visible = (selectedTalukaLength > cameraIndex && selectedTalukaLength <= (cameraIndex + cameraPerSet));
+    //             } else {
+    //                 camera.visible = false;
+    //             }
+    //         return camera;
+    //     });
+    // }
+
+    // if (selectedPollingStation !== "All") {
+    //     cameraList = cameraList.map((camera, index) => {
+    //             if (camera.polling_station === selectedPollingStation) {
+    //                 selectedPollingStationLength++;
+    //                 camera.visible = (selectedPollingStationLength > cameraIndex && selectedPollingStationLength <= (cameraIndex + cameraPerSet));
+    //             } else {
+    //                 camera.visible = false;
+    //             }
+    //         return camera;
+    //     });
+    // }
+
+    // if(selectedPollingStation==="All"){
+    //         cameraList = cameraList.map((camera, index) => {
+    //         camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
+    //         if(camera.visible&&selectedPollingStation!="All"){
+    //             camera.visible=camera.polling_station===selectedPollingStation;
+    //         }
+    //         return camera;
+    //     }
+    // );
+    // }
+
+    // if(selectedTaluka==="All"){
+    //         cameraList = cameraList.map((camera, index) => {
+    //         camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
+    //         if(camera.visible&&selectedTaluka!="All"){
+    //             camera.visible=camera.taluka_name===selectedTaluka;
+    //         }
+    //         return camera;
+    //     }
+    // );
+    // }
+
+
+
+    let visibleCount = 0; // Tracks how many cameras are visible based on the filters
+
+    cameraList = cameraList.map((camera, index) => {
+    // Determine if the camera matches the taluka and polling station filters
+    const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
+    const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station === selectedPollingStation;
+
+    // Set camera visibility based on filters and current camera set (cameraPerSet)
+    if (matchesTaluka && matchesPollingStation) {
+        visibleCount++;
+        camera.visible = (visibleCount > cameraIndex && visibleCount <= (cameraIndex + cameraPerSet));
+    } else {
+        camera.visible = false; // Hide camera if it doesn't match the filters
     }
 
-    if(selectedTaluka==="All"){
-            cameraList = cameraList.map((camera, index) => {
-            camera.visible = (index >= cameraIndex && index < (cameraIndex + cameraPerSet));
-            if(camera.visible&&selectedTaluka!="All"){
-                camera.visible=camera.taluka_name===selectedTaluka;
-            }
-            return camera;
-        }
-    );
-    }
+    return camera;
+});
 }
 
   
@@ -279,6 +364,7 @@ async function getInfo(){
     authenticateToken()
     await fetchTalukas()
     await fetchCameras()
+    await fetchPolls()
 }
 
 onMount(()=>{
@@ -303,7 +389,7 @@ onMount(()=>{
 
 
 <div class="flex flex-col pb-2 mx-auto bg-gray-900 transition-all duration-300" style="width:100%;height:100svh;">
-    <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-20">
+    <button  class="{showingCamera?"fixed":"hidden"} h-full w-full bg-black bg-opacity-90 z-40">
         <div class="hover:cursor-default w-full h-full  relative">
             <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
                
@@ -333,14 +419,27 @@ onMount(()=>{
          
         <div class="w-full px-10 flex transition-all duration-300 flex-row text-xl p-2 justify-between items-center align-center" style="height:14svh">
                         
-            <div class="text-white items-center flex flex-row gap-6">
-                <div>Taluka : </div>
-                <select value="All" class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {selectedTaluka = e.target.value;cameraIndex=0;updateVisibleCameras();}}">
-                    <option value="All">All</option>
-                    {#each talukaList as taluka}
-                        <option value={taluka.taluka}>{taluka.taluka}</option>
-                    {/each}
-                </select>
+            <div class="text-white items-center flex flex-row gap-10">
+                <div class="flex flex-row gap-3 justify-center">
+                    <div>Taluka : </div>
+                    <select bind:value={selectedTaluka} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
+                        <option value="All">All</option>
+                        {#each talukaList as taluka}
+                            <option value={taluka.taluka}>{taluka.taluka}</option>
+                        {/each}
+                    </select>
+                </div>
+                
+                
+                <div  class="flex flex-row gap-3 justify-center">
+                    <div>Polling Station : </div>
+                    <select bind:value={selectedPollingStation} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
+                        <option value="All">All</option>
+                        {#each pollingStationList as polling_station}
+                            <option value={polling_station.polling_station}>{polling_station.polling_station}</option>
+                        {/each}
+                    </select>
+                </div>
             
             </div>
 
@@ -360,10 +459,7 @@ onMount(()=>{
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">
-
-               
-        
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">        
                 {#each cameraList as camera}
                     <div class="text-white bg-gray-800 {camera.visible?"flex":"hidden"} border-2 border-gray-700  flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
                         <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
@@ -372,12 +468,12 @@ onMount(()=>{
                                 <track kind="captions">
                             </video>
                         </div>
-                        <div class="w-full bg-gray-900 relative text-base">
+                        <div class="w-full bg-gray-900 relative text-base overflow-hidden">
 
-                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
+                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap inline-block"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold  ">
                                 <div class="bg-gray-900">
-                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 z-50 h-full">⛶</button>
                                 </div>
                             </div>
                         </div>
@@ -393,7 +489,7 @@ onMount(()=>{
 <style>
 
     .camera_info{
-        animation: scroll_animation 25s linear infinite;
+        animation: scroll_animation 30s linear infinite;
     }
 
     @keyframes scroll_animation{
