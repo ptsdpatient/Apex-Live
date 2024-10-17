@@ -1,8 +1,8 @@
 <script>
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-    // let url='http://117.248.105.198:2000'
-    let url='http://localhost:2000'
+    let url='http://117.248.105.198:2000'
+    // let url='http://localhost:2000'
     let token
     let interval
     let port=8080
@@ -33,6 +33,10 @@
     let selectedDuration=3
 
     let resolutionList=[
+        {
+            r:"1",
+            c:"2"
+        },
         {
             r:"2",
             c:"4"
