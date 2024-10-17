@@ -10,19 +10,21 @@
     const getToken = () =>{
     return localStorage.getItem('authToken')
     }
+
+    $: isMuted = !showingCamera; 
     let showingCamera=false
     let showCameraPS=''
     let showCameraM=''
-    let selectedTaluka='All'
+    let selectedConstituency='All'
     let selectedPollingStation='All'
     let showCameraPA=''
     let cameraList=[]
-    let talukaList=[]
+    let constituencyList=[]
     let pollingStationList=[]
     let cameraIndex=0
     let selectedResolution ={
          row:"2",
-         col:"3"
+         col:"4"
     };
     let cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col)
 
@@ -33,17 +35,17 @@
     let resolutionList=[
         {
             r:"2",
-            c:"3"
+            c:"4"
         },
         {
             r:"3",
-            c:"4"
-        },{
-            r:"4",
             c:"6"
         },{
-            r:"6",
-            c:"12"
+            r:"4",
+            c:"8"
+        },{
+            r:"5",
+            c:"10"
         },
     ]
 
@@ -153,10 +155,10 @@
        }
    }
 
-   async function fetchTalukas() {
+   async function fetchConstituency() {
        
        try {
-           const response = await fetch(`${url}/getTalukas`, {
+           const response = await fetch(`${url}/getConstituencies`, {
                method: 'GET',
                headers: {
                    'Authorization': `Bearer ${token}`,
@@ -164,7 +166,7 @@
                }
            });
 
-           talukaList = await response.json();
+           constituencyList = await response.json();
        } catch (error) {
            console.error('Error fetching employees:', error);
            errorMessage = 'An error occurred while fetching employees.';
@@ -218,15 +220,19 @@ function playCameras(){
 }
 
    
-   
-
 function configureCameras(){
     cameraList.forEach((camera) => {
     initHLS(camera.serial_number);
 });
+}
 
 
-
+function muteThisCamera(camera){
+    let desiredCamera= camera.serial_number;
+    cameraList = cameraList.map((camera, index) => {
+        if(camera.serial_number===desiredCamera) camera.muted=!camera.muted
+        return camera;
+    });
 }
 
 function changeSlide() {
@@ -237,10 +243,10 @@ function changeSlide() {
     let visibleCamerasCount = 0;
 
     cameraList.forEach((camera) => {
-        const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
+        const matchesConstituency = selectedConstituency === "All" || camera.ac_name === selectedConstituency;
         const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station_name === selectedPollingStation;
 
-        if (matchesTaluka && matchesPollingStation) {
+        if (matchesConstituency && matchesPollingStation) {
             visibleCamerasCount++;
         }
     });
@@ -250,9 +256,6 @@ function changeSlide() {
     }
 
     updateVisibleCameras();
-
-
-
     
 }
 
@@ -262,10 +265,10 @@ function updateVisibleCameras() {
 
     cameraList = cameraList.map((camera, index) => {
     
-    const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
+    const matchesConstituency = selectedConstituency === "All" || camera.ac_name === selectedConstituency;
     const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station_name === selectedPollingStation;
 
-    if (matchesTaluka && matchesPollingStation) {
+    if (matchesConstituency && matchesPollingStation) {
         visibleCount++;
         camera.visible = (visibleCount > cameraIndex && visibleCount <= (cameraIndex + cameraPerSet));
     } else {
@@ -287,7 +290,7 @@ function handleResolution(resolution) {
 
 async function getInfo(){
     authenticateToken()
-    await fetchTalukas()
+    await fetchConstituency()
     await fetchCameras()
     await fetchPolls()
 }
@@ -324,11 +327,11 @@ onMount(()=>{
                             <div class=" camera_info text-white rounded-xl  whitespace-nowrap overflow-hidden">  PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}</div>
                             <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold  ">
                                 <div class="bg-gray-900 h-full relative">
-                                    <button on:click={()=>{showingCamera=false}} class=" px-3  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
+                                    <button on:click={()=>{showingCamera=false;}} class=" px-3  transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300  h-full">⛶</button>
                                 </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full bg-gray-800" id='showCameraID'>
+                        <video autoplay bind:muted={isMuted} class="h-full w-full bg-gray-800" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
@@ -344,11 +347,11 @@ onMount(()=>{
                         
             <div class="text-white items-center flex flex-row gap-10">
                 <div class="flex flex-row gap-3 justify-center">
-                    <div>Taluka : </div>
-                    <select bind:value={selectedTaluka} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
+                    <div>AC : </div>
+                    <select bind:value={selectedConstituency} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
                         <option value="All">All</option>
-                        {#each talukaList as taluka}
-                            <option value={taluka.taluka}>{taluka.taluka}</option>
+                        {#each constituencyList as constituency}
+                            <option value={constituency.ac_name}>{constituency.ac_name}</option>
                         {/each}
                     </select>
                 </div>
@@ -385,8 +388,10 @@ onMount(()=>{
         <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">        
                 {#each cameraList as camera}
                 <div class="text-white relative bg-gray-800 {camera.visible ? 'flex' : 'hidden'} border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg transition-all duration-300">
-                    <div class="rounded-lg group h-auto relative flex-grow w-full h-full overflow-hidden">
-                        <video autoplay class="object-cover w-full h-full" id='{camera.serial_number}'>
+                    <div class="rounded-lg relative group h-auto relative flex-grow w-full h-full overflow-hidden">
+                        <button on:click={()=>{muteThisCamera(camera)}} class="group-hover:block hidden z-20 transition-all duration-300 absolute right-0 p-3 text-4xl">{!camera.muted?"🔊":"🔈"}</button>
+                        
+                        <video autoplay class="object-cover w-full h-full" bind:muted={camera.muted} id='{camera.serial_number}'>
                             <track kind="captions">
                         </video>
                     </div>

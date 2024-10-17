@@ -210,6 +210,7 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
         const { rows } = await pool.query(query);
         const modifiedRows = rows.map(row => ({
             ...row,
+            muted:true,
             visible: false 
         }));
 
