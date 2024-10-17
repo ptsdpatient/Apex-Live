@@ -3,10 +3,19 @@ DROP TABLE IF EXISTS cameras CASCADE;
 DROP TABLE IF EXISTS polling_stations CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
 DROP TABLE IF EXISTS taluka CASCADE;
+DROP TABLE IF EXISTS constituencies CASCADE;
 
 CREATE TABLE taluka(
     id SERIAL PRIMARY KEY,
     taluka TEXT
+);
+
+CREATE TABLE constituencies(
+    id SERIAL PRIMARY KEY,
+    ac_number TEXT,
+    ac_name TEXT,
+    taluka INTEGER,
+    FOREIGN KEY (taluka) REFERENCES taluka(id)
 );
 
 CREATE TABLE employees(
@@ -19,12 +28,12 @@ CREATE TABLE employees(
 
 CREATE TABLE polling_stations(
     id SERIAL PRIMARY KEY,
-    polling_station TEXT,
+    constituency INTEGER,
+    polling_station_name TEXT,
     polling_address TEXT,
-    taluka INTEGER,
     operator INTEGER,
-    FOREIGN KEY (operator) REFERENCES employees(id) ON DELETE SET NULL,
-    FOREIGN KEY(taluka) REFERENCES taluka(id)
+    FOREIGN KEY (constituency) REFERENCES constituencies(id),
+    FOREIGN KEY (operator) REFERENCES employees(id) ON DELETE SET NULL
 );
 
 CREATE TABLE cameras (

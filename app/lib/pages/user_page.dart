@@ -8,8 +8,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:camera/camera.dart';
+import 'package:video_player/video_player.dart';
 import '../token.dart';
 import '../utilities/button.dart';
+import '../utilities/input.dart';
 import '../utilities/methods.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,7 +31,8 @@ class _UserPageState extends State<UserPage> {
   XFile? capturedImage;
   String? decodedQRCode;
   bool isAdmin=true;
-  final serialNumberController = TextEditingController();
+  var serialNumberController = TextEditingController();
+  var searchController = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   String? selectedPollingStationId;
   String? pollingStationId;
@@ -38,6 +41,8 @@ class _UserPageState extends State<UserPage> {
 
   late Future<List<String>>? cameraList;
   late Future<List<String>>? pollsList;
+  late List<String> cameraData=[],pollsData=[];
+  late List<String> filteredCameraList=[],filteredPollsList=[];
 
   List<String> pollingStationIdList=['Select polling station',''];
 
@@ -93,8 +98,6 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
-
-
 
         return responseData.map<String>((data) {
           return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station']}';
@@ -250,8 +253,12 @@ class _UserPageState extends State<UserPage> {
         print('Registered camera successfully: ${response.body}');
         showNotification("Camera Registered successfully! ${serialNumberController.text}");
         fetchInfo();
-        serialNumberController.clear();
-        serialNumberController.text='';
+
+        setState(() {
+          serialNumberController.clear();
+          serialNumberController.text='';
+        });
+
       } else {
         print('Fetch failed: ${response.statusCode} - ${response.body}');
       }
@@ -260,6 +267,34 @@ class _UserPageState extends State<UserPage> {
     }
   }
 
+
+  void filterCamera(String query) {
+    List<String> tempList = [];
+    if (query.isNotEmpty) {
+      tempList = cameraData
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    } else {
+      tempList = List.from(cameraData);
+    }
+    setState(() {
+      filteredCameraList = tempList;
+    });
+  }
+
+  void filterPollingStation(String query) {
+    List<String> tempList = [];
+    if (query.isNotEmpty) {
+      tempList = pollsData
+          .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    } else {
+      tempList = List.from(pollsData);
+    }
+    setState(() {
+      filteredPollsList = tempList;
+    });
+  }
 
 
   @override
@@ -326,28 +361,88 @@ class _UserPageState extends State<UserPage> {
             SliverToBoxAdapter(
               child:Column(
                 children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24, right: 24, top: 14),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: TextField(
+                          onChanged: (value){
+                            bottomNavIndex==0?filterCamera(value):filterPollingStation(value);
+                          },
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            prefixIcon: Icon(Icons.search_rounded,size:35,color:Colors.blue),
+                            hintText: "Search ${bottomNavIndex==0?"Cameras":"Polls"}",
+                            hintStyle: TextStyle(
+                                color:Colors.grey.shade700
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ),
                     FutureBuilder(
                         future:bottomNavIndex==0? cameraList:pollsList,
                         builder: (context,snapshot){
                           if(snapshot.connectionState==ConnectionState.done){
+
+                            if (bottomNavIndex == 0 && cameraData.isEmpty) {
+                              cameraData = snapshot.data!;
+                              filteredCameraList = List.from(cameraData);
+                            } else if (bottomNavIndex == 1 && pollsData.isEmpty) {
+                              pollsData = snapshot.data!;
+                              filteredPollsList = List.from(pollsData);
+                            }
+                            List<String> data = (bottomNavIndex == 0) ? filteredCameraList : filteredPollsList;
                             return ListView.builder(
                                 shrinkWrap: true,
                                 physics: const BouncingScrollPhysics(),
-                                itemCount: snapshot.data!.length,
+                                itemCount: data.length,
                                 itemBuilder: (context,index){
-                                String item = snapshot.data![index];
+                                String item = data[index];
                                 return Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 20,vertical: 7),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
+                                  padding: EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                                  child: GestureDetector(
+                                    onTap: (){
+                                        if(bottomNavIndex==1) return;
+                                        RegExp regExp = RegExp(r'CID : (.+?),');
+                                        Match? match = regExp.firstMatch(item);
+
+                                        if (match != null) {
+                                          String serialNumber = match.group(1)!.trim();
+                                          String hlsUrl = 'http://apex-computers.live:8080/hls/$serialNumber.m3u8';
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                            return ClipRRect(
+                                              borderRadius: BorderRadius.circular(25),
+                                              child: Scaffold(
+                                                appBar: AppBar(
+                                                  title: Text('CID : $serialNumber'),
+                                                  automaticallyImplyLeading: false,
+                                                ),
+                                                body: HlsStreamPlayer(url: hlsUrl),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 10,vertical:10),
+                                        child: Text('\t${index+1}. $item'),
+
+                                      ),
                                     ),
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 10,vertical:10),
-                                      child: Text('\t$index. $item'),
-                                    ),
-                                  ),
+                                  )
                                 );
                             });
                           }else{
@@ -544,6 +639,50 @@ class _UserPageState extends State<UserPage> {
             });
           },
         )
+    );
+  }
+}
+
+
+class HlsStreamPlayer extends StatefulWidget {
+  final String url;
+
+  HlsStreamPlayer({required this.url});
+
+  @override
+  _HlsStreamPlayerState createState() => _HlsStreamPlayerState();
+}
+
+class _HlsStreamPlayerState extends State<HlsStreamPlayer> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
+      ..initialize().then((_) {
+        setState(() {
+          _controller.play();
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: _controller.value.isInitialized
+          ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+      )
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }

@@ -1,7 +1,7 @@
 <script>
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-    // let url='http://apex-computers.live:2000'
+    // let url='http://117.248.105.198:2000'
     let url='http://localhost:2000'
     let token
     let interval

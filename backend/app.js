@@ -188,18 +188,21 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
     try{
         const query = `        
             SELECT 
-            cameras.id AS "camera_id",
-            cameras.serial_number AS "serial_number",
-            taluka.taluka AS "taluka_name",
-            polling_stations.polling_station AS "polling_station",
-            employees.full_name AS "operator_name",
-            employees.phone_number AS "operator_phone",
-            polling_stations.polling_address AS "polling_address"
+                cameras.id AS "camera_id",
+                cameras.serial_number AS "serial_number",
+                polling_stations.polling_station_name AS "polling_station_name",
+                polling_stations.polling_address AS "polling_address",
+                polling_stations.id AS "polling_id",
+                employees.full_name AS "operator_name",
+                employees.phone_number AS "operator_phone",
+                constituencies.ac_name AS "ac_name",
+                constituencies.ac_number AS "ac_number"
             FROM cameras
             LEFT JOIN polling_stations ON cameras.PS = polling_stations.id
             LEFT JOIN employees ON polling_stations.operator = employees.id
-            LEFT JOIN taluka ON polling_stations.taluka = taluka.id;
-        `;    
+            LEFT JOIN constituencies ON polling_stations.constituency = constituencies.id;
+        `;
+ 
     
         const { rows } = await pool.query(query);
 
@@ -225,21 +228,27 @@ app.get('/',(req,res)=>{
 app.get('/getPollingStation',authenticateToken,async (req,res)=>{
     // console.log("getting ps")
     try{
-        const query = `        
-                    SELECT
-                    ps.id AS polling_station_id,
-                    ps.polling_station,
-                    ps.polling_address,
-                    t.taluka AS taluka_name,
-                    e.full_name AS operator_name
-                    FROM
-                        polling_stations ps
-                    LEFT JOIN
-                        taluka t ON ps.taluka = t.id
-                    LEFT JOIN
-                        employees e ON ps.operator = e.id;
-                        
-        `;
+        const query = `         
+                        SELECT
+                        ps.id AS polling_station_id,
+                        ps.polling_station_name,
+                        ps.polling_address,
+                        t.taluka AS taluka_name,
+                        e.full_name AS operator_name,
+                        e.phone_number AS operator_phone,
+                        c.ac_number,
+                        c.ac_name,
+                        c.taluka AS constituency_taluka_id
+                        FROM
+                            polling_stations ps
+                        LEFT JOIN
+                            constituencies c ON ps.constituency = c.id
+                        LEFT JOIN
+                            taluka t ON c.taluka = t.id
+                        LEFT JOIN
+                            employees e ON ps.operator = e.id;
+                    `;
+
        
         const { rows } = await pool.query(query);
         res.status(200).json(rows);
@@ -249,25 +258,65 @@ app.get('/getPollingStation',authenticateToken,async (req,res)=>{
 })
 
 
+app.get('/getConstituencies',authenticateToken,async (req,res)=>{
+    // console.log("getting constituency")
+    try{
+        const query = `        
+                    SELECT
+                    c.id AS constituency_id,
+                    c.ac_number,
+                    c.ac_name,
+                    t.taluka AS taluka_name
+                    FROM
+                        constituencies c
+                    LEFT JOIN
+                        taluka t ON c.taluka = t.id                  
+        `;
+        const { rows } = await pool.query(query);
+        // console.log(rows)
+
+        res.status(200).json(rows);
+    }catch(err){
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.post('/registerConstituency',authenticateToken,async (req,res)=>{
+    const {number,name,taluka} = req.body
+    try{
+        const taluka_id = await pool.query('SELECT id FROM taluka WHERE taluka = $1',[taluka])
+        const result = await pool.query(
+            'INSERT INTO constituencies (ac_number, ac_name, taluka) VALUES ($1, $2, $3) RETURNING ac_name',
+            [number,name,taluka_id.rows[0].id]
+        );
+        const ac_name = result.rows[0].ac_name;
+        res.status(200).json({ message: 'Employee registered successfully.', name: ac_name,done:true });
+        console.log("$ Constituency registered with AC name : " + ac_name)
+    }catch(e){
+        console.log("error occured : "+e)
+        res.status(201).json({ message: 'Constituency not registered.',done:false });
+
+    }
+})
 
 app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
-    const {number,operator,address,taluka} = req.body
+    const {name,operator,address,constituency} = req.body
     try{
 
         const operator_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[operator])
-        const taluka_id = await pool.query('SELECT id FROM taluka WHERE taluka = $1',[taluka])
+        const constituency_id = await pool.query('SELECT id FROM constituencies WHERE ac_name = $1',[constituency])
        
         const result = await pool.query(
-            'INSERT INTO polling_stations (polling_station, polling_address, taluka, operator) VALUES ($1, $2, $3, $4) RETURNING polling_station',
-            [`Polling Station ${number}`,address,taluka_id.rows[0].id,operator_id.rows[0].id]
+            'INSERT INTO polling_stations (polling_station_name, polling_address, constituency, operator) VALUES ($1, $2, $3, $4) RETURNING polling_station_name',
+            [name,address,constituency_id.rows[0].id,operator_id.rows[0].id]
         );
 
-        const PS_address = result.rows[0].polling_station;
-        res.status(200).json({ message: 'Employee registered successfully.', name: PS_address,done:true });
+        const PS_address = result.rows[0].polling_station_name;
+        res.status(200).json({ message: 'Polling Station registered successfully.', name: PS_address,done:true });
         console.log("$ Polling Station registered with PS name : " + PS_address)
     }catch(e){
         console.log("error occured : "+e)
-        res.status(201).json({ message: 'Employee not registered.',done:false });
+        res.status(201).json({ message: 'Polling Station not registered.',done:false });
 
     }
 })
@@ -284,7 +333,7 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
 
 
     try{
-        const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station = $1',[trimmed_poll_station])
+        const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station_name = $1',[trimmed_poll_station])
         // console.log("pol id got")
        if (poll_id.rowCount === 0) {
         console.log(`-> Polling station "${poll_station}" not found.`);
@@ -392,6 +441,6 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.listen(2000,'0.0.0.0', () => {
+app.listen(2000, () => {
     console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://0.0.0.0:${2000}\n\x1b[37m`);
 });

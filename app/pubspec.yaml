@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.1
   cherry_toast: ^1.11.0
+  video_player: ^2.9.2
   flutter_dotenv: ^5.1.0
   camera: ^0.11.0+2
   permission_handler: ^11.3.1

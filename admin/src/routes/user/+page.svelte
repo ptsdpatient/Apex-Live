@@ -7,9 +7,15 @@
     let viewMode = 0;
     let isAdmin=false
 
-    let filterTaluka='All'
+    let filterConstituency='All'
     let filterPollingStation='All'
     let filterOperator='All'
+    
+    let constituencyTaluka='Chandrapur'
+    let constituencNumber=''
+    let constituencyName=''
+    
+
 
     let editItem=5
 
@@ -32,16 +38,17 @@
 
     let editTalukaName=''
 
-    let pollingStationNumber=''
+    let pollingStationName=''
     let pollingStationOperator=''
     let pollingStationAddress=''
-    let pollingStationTaluka=''
+    let pollingStationconstituency=''
 
 
     let employeeList=[]
     let cameraList=[]
     let pollingStationList=[]
     let talukasList=[]
+    let constituencies=[]
 
     let cameraPollStation=''
     let serialNumber = '';
@@ -53,7 +60,7 @@
 
 
 
-    // let url='http://apex-computers.live:2000'
+    // let url='http://117.248.105.198:2000'
     let url ='http://localhost:2000'
 
     let token
@@ -77,7 +84,25 @@
 
 
 
+    async function fetchConstituencies() {
+       
+       try {
+           const response = await fetch(`${url}/getConstituencies`, {
+               method: 'GET',
+               headers: {
+                   'Authorization': `Bearer ${token}`,
+                   'Content-Type': 'application/json'
+               }
+           });
 
+          
+
+           constituencies = await response.json();
+       } catch (error) {
+           console.error('Error fetching constituencies:', error);
+           errorMessage = 'An error occurred while fetching constituencies.';
+       }
+   }
 
 
     async function fetchPollingStations() {
@@ -173,13 +198,49 @@
     }
 
 
-
-    async function registerPollingStation(){
-
-        if (pollingStationNumber=='' || !pollingStationOperator || !pollingStationAddress || !pollingStationTaluka||pollingStationNumber==''||pollingStationOperator==''||pollingStationAddress==''||pollingStationTaluka=='') {
+    async function registerConstituency(){
+        if (!constituencyTaluka || !constituencNumber || !constituencyName) {
             alert("Missing some info for taluka");
             return;
         }
+
+        try{
+
+            const response = await fetch(`${url}/registerConstituency`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                     number:constituencNumber,
+                     name:constituencyName,
+                     taluka:constituencyTaluka,
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if(data.done){
+                    pollingStationName=''   
+                    showSuccessAlert("Assembly Constituency registered! with name : " + data.name)
+                    getInfo()     
+                         
+                }
+            } else {
+                alert(data.error || 'Registeration failed');
+            }
+
+        }catch(err){
+
+        }
+    }
+
+
+    async function registerPollingStation(){
+
+        
 
         try{
 
@@ -190,21 +251,20 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                     number:pollingStationNumber,
-                     operator:pollingStationOperator,
-                     address:pollingStationAddress,
-                     taluka:pollingStationTaluka
-                })
+                        name:pollingStationName,
+                        operator:pollingStationOperator,
+                        address:pollingStationAddress,
+                        constituency:pollingStationconstituency
+                    })
             });
 
             const data = await response.json();
 
             if (response.ok) {
                 if(data.done){
-                    pollingStationNumber=''   
+                    pollingStationName=''   
                     showSuccessAlert("Polling Station registered! with name : " + data.name)
-                    getInfo()     
-                         
+                    getInfo()                              
                 }
             } else {
                 alert(data.error || 'Registeration failed');
@@ -351,6 +411,7 @@
                 console.log('Authenticated user:', data);
                 if(data.error) window.location='/login'
                 isAdmin=data.isAdmin
+                if(isAdmin)viewMode=1
             }
 
             if (response.ok) {
@@ -507,6 +568,7 @@
         fetchEmployees()
         fetchTalukas()
         fetchCameras()
+        fetchConstituencies()
         if(showDialogue)showSuccessAlert('Fetched info successful!')
     }
 
@@ -541,9 +603,12 @@
 
         const dataToDownload = visibleCameras.map((camera,index) => ({
             "Sr.No" : (index+1),
-            "Camera ID": camera.serial_number,
-            "Polling Station": camera.polling_station,
-            "Taluka Name": camera.taluka_name,
+            "CID": camera.camera_id,
+            "Model Number" : camera.serial_number,
+            "PID": camera.polling_id,
+            "Polling Station": camera.polling_station_name,
+            "AC No." : camera.ac_number,
+            "AC Name" : camera.ac_name,
             "Operator": camera.operator_name,
             "Operator Mobile" : camera.operator_phone,
             "Address" : camera.polling_address
@@ -555,20 +620,21 @@
 
         XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-        XLSX.writeFile(workbook, `cameraList-${filterTaluka}-${filterOperator}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
+        XLSX.writeFile(workbook, `cameraList-${filterConstituency}-${filterOperator}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
     }
 
     function filterCameraList(){   
+        // alert(filterConstituency)
        
         cameraList = cameraList.map(camera => {
             camera.visible = true;
-            if (filterTaluka !== "All" && camera.taluka_name !== filterTaluka) {
+            if (filterConstituency !== "All" && camera.ac_name !== filterConstituency) {
                 camera.visible = false;
             }
             if (filterOperator !== "All" && camera.visible && camera.operator_name !== filterOperator) {
                 camera.visible = false;
             }
-            if (filterPollingStation !== "All" && camera.visible && camera.polling_station !== filterPollingStation) {
+            if (filterPollingStation !== "All" && camera.visible && camera.polling_station_name !== filterPollingStation) {
                 camera.visible = false;
             }
 
@@ -725,16 +791,18 @@
 </div>
 
 <div class="flex flex-col bg-gray-200" style="min-height:200svh;width:100%">
-    <div class="w-full  h-full rounded-xl  text-2xl mb-24">
-        <div class="w-full fixed bg-white bg-opacity-30 py flex flex-row justify-between px-10 py-5 z-10 backdrop-blur-xl ">
-            <div class=" flex flex-row gap-5  pl-5 ml-10">
+    <div class="w-full  h-full rounded-xl  text-xl mb-24">
+        <div class="w-full pl-10 fixed bg-white bg-opacity-30  flex flex-row justify-between px-2 py-5 z-10 backdrop-blur-xl ">
+            <div class=" flex flex-row gap-3">
                 <button on:click={()=>{viewMode=0}} class="bg-{viewMode==0?"green-700":"transparent"} px-7 order-1 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==0?"white":"black"} transition-all transform duration-300 {viewMode==0?"hover:bg-green-600 hover:shadow-xl hover:scale-105 text-white":""}">Cameras</button>
                 <button on:click={()=>{viewMode=2}} class="bg-{viewMode==2?"purple-700":"transparent"} px-7 order-2 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==2?"white":"black"} transition-all transform duration-300 {viewMode==2?"hover:bg-purple-600  hover:shadow-xl hover:scale-105 text-white":""}">Employees</button>
                 {#if isAdmin}
                     <button on:click={()=>{viewMode=1}} class="bg-{viewMode==1?"orange-500":"transparent"} px-7 order-0 transform hover:scale-105 duration-300 transition-all py-2 rounded-xl text-{viewMode==1?"white":"black"} transition-all transform duration-300 {viewMode==1?"hover:bg-orange-400  hover:shadow-xl hover:scale-105 text-white":""}">Register</button>
                 {/if}
                 <button on:click={()=>{viewMode=3}} class="bg-{viewMode==3?"yellow-500":"transparent"} px-7 order-3 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==3?"white":"black"} transition-all transform duration-300 {viewMode==3?"hover:bg-yellow-500  hover:shadow-xl hover:scale-105 text-white":""}">Polling Stations</button>
-                <button on:click={()=>{viewMode=4}} class="bg-{viewMode==4?"red-500":"transparent"} px-7 order-4 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==4?"white":"black"} transition-all transform duration-300 {viewMode==4?"hover:bg-red-500  hover:shadow-xl hover:scale-105 text-white":""}">Talukas</button>
+                <button on:click={()=>{viewMode=4}} class="bg-{viewMode==4?"red-500":"transparent"} px-7 order-5 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==4?"white":"black"} transition-all transform duration-300 {viewMode==4?"hover:bg-red-500  hover:shadow-xl hover:scale-105 text-white":""}">Talukas</button>
+                <button on:click={()=>{viewMode=5}} class="bg-{viewMode==5?"red-700":"transparent"} px-7 order-4 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==5?"white":"black"} transition-all transform duration-300 {viewMode==5?"hover:bg-red-700  hover:shadow-xl hover:scale-105 text-white":""}">Constituencies</button>
+                
             </div>
             
             <div>
@@ -752,14 +820,14 @@
                 <div class="overflow-x-auto rounded-xl flex flex-col">
                     <div class="flex flex-row justify-between mb-5">
                         <div class="flex text-2xl flex-row gap-10 justify-around whitespace-nowrap items-center">                
-                            <div>Taluka : </div>
-                            <select bind:value={filterTaluka} on:change={filterCameraList} class=" px-3 py-2 rounded-xl">
+                            <div>AC : </div>
+                            <select bind:value={filterConstituency} on:change={filterCameraList} class=" px-3 py-2 rounded-xl">
                                 <option value="All">
                                     All
                                 </option>
-                                {#each talukasList as taluka}
-                                    <option value={taluka.taluka}>
-                                        {taluka.taluka}
+                                {#each constituencies as constituency}
+                                    <option value={constituency.ac_name}>
+                                        PS : {constituency.ac_number}, {constituency.ac_name}
                                     </option>
                                 {/each}
                             </select>   
@@ -781,8 +849,8 @@
                                     All
                                 </option>
                                 {#each pollingStationList as poll}
-                                    <option value={poll.polling_station}>
-                                        {poll.polling_station}
+                                    <option value={poll.polling_station_name}>
+                                        PID : {poll.polling_station_id}, {poll.polling_station_name}
                                     </option>
                                 {/each}
                             </select>    
@@ -791,36 +859,42 @@
                             
                         </div>
                     </div>
-                    <div class="w-full h-full rounded-lg">
-                        <table class="min-w-full bg-white shadow-md">
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="min-w-full bg-white shadow-md rounded-lg">
                             <thead>
-                              <tr class="bg-gray-800 text-white text-left">
-                                <th class="py-2 px-4">Camera ID</th>
-                                <th class="py-2 px-4">Serial Number</th>
-                                <th class="py-2 px-4">Polling Station</th>
-                                <th class="py-2 px-4">Taluka Name</th>
-                                <th class="py-2 px-4">Operator</th>
-                                <th class="py-2 px-4">Operator Mobile Number</th>
-                                <th class="py-2 px-4">Polling Station Address</th>
-                              </tr>
+                                <tr class="bg-gray-800 text-white text-left">
+
+                                    <th class="py-2 px-4">Sr.no</th>
+                                    <th class="py-2 px-4">CID</th>
+                                    <th class="py-2 px-4">Serial Number</th>
+                                    <th class="py-2 px-4">PID</th>
+                                    <th class="py-2 px-4">Polling Station</th>
+                                    <th class="py-2 px-4">AC</th>
+                                    <th class="py-2 px-4">Operator</th>
+                                    <th class="py-2 px-4">Operator Phone</th>
+                                    <th class="py-2 px-4">Address</th>
+
+                                </tr>
                             </thead>
                             <tbody>
-                              {#each cameraList as camera, camera_index }
-                                <tr on:click={()=>{if(isAdmin)openCamera(camera)}} class="{camera.visible?"":"hidden"} hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
-                                  <td class="py-2 px-4">{camera_index+1}</td>
-                                  <td class="py-2 px-4">{camera.serial_number}</td>
-                                  <td class="py-2 px-4">{camera.polling_station}</td>
-      
-                                  <td class="py-2 px-4">{camera.taluka_name}</td>
-                                  <td class="py-2 px-4">{camera.operator_name}</td>
-                                  <td class="py-2 px-4">{camera.operator_phone}</td>
-                                  <td class="py-2 px-4">{camera.polling_address}</td>
-                                </tr>
-                           
-                              {/each}
+                                {#each cameraList as camera, camera_index (camera.camera_id)}
+                                    <tr on:click={() => { if (isAdmin) openCamera(camera) }} class="hover:cursor-pointer {camera.visible?"":"hidden"} border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="py-2 px-4">{camera_index+1}</td>
+                                        <td class="py-2 px-4">{camera.camera_id}</td>
+                                        <td class="py-2 px-4">{camera.serial_number}</td>
+                                        <td class="py-2 px-4">{camera.polling_id}</td>
+                                        <td class="py-2 px-4">{camera.polling_station_name}</td>
+                                        <td class="py-2 px-4">{camera.ac_name}</td>
+                                        <td class="py-2 px-4">{camera.operator_name}</td>
+                                        <td class="py-2 px-4">{camera.operator_phone}</td>
+                                        <td class="py-2 px-4">{camera.polling_address}</td>
+
+                                    </tr>
+                                {/each}
                             </tbody>
-                          </table>
+                        </table>
                     </div>
+                    
                   </div>
                   
 
@@ -833,8 +907,8 @@
                             <div class="ml-10 mt-5 my-2">Polling Station :</div>
                                 <select bind:value={cameraPollStation} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                                     {#each pollingStationList as poll}
-                                        <option value={poll.polling_station}>
-                                            {poll.polling_station}
+                                        <option value={poll.polling_station_name}>
+                                           PS : {poll.polling_station_id} , {poll.polling_station_name}
                                         </option>
                                     {/each}
                                 </select>
@@ -876,7 +950,7 @@
                             <div class="mx-auto mt-5 mb-5 text-4xl ">Register Polling Station</div>
 
                             <div class="ml-10 mt-5 my-2">Polling Station :</div>
-                            <input bind:value={pollingStationNumber} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station">
+                            <input bind:value={pollingStationName} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station">
                             <div class="ml-10 my-2">Operator :</div>
                             <select bind:value={pollingStationOperator} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                                 {#each employeeList as employee}
@@ -885,12 +959,13 @@
                             </select>
 
                             
-                            <div class="ml-10 mt-5 my-2">Taluka :</div>
-                            <select bind:value={pollingStationTaluka} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
-                                {#each talukasList as taluka}
-                                    <option value={taluka.taluka}>{taluka.taluka}</option>
+                            <div class="ml-10 mt-5 my-2">Assembly Constituency :</div>
+                            <select bind:value={pollingStationconstituency} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                                {#each constituencies as constituency}
+                                    <option value={constituency.ac_name}>{constituency.ac_name}</option>
                                 {/each}
                             </select>
+                            
                             
                             <div class="ml-10 mt-5 my-2">Address :</div>
                             
@@ -900,7 +975,31 @@
                                              
                         </div>
 
+                        <div class="bg-gray-300 flex flex-col p-3 rounded-3xl justify-center">
+                        
+                            <div class="mx-auto mt-5 mb-5 text-4xl ">Register Assembly Constituency</div>
 
+                            <div class="ml-10 mt-5 my-2">Assembly Constituency Number :</div>
+                            <input bind:value={constituencNumber} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="AC number (ex. 70)">
+                            
+                            <div class="ml-10 mt-5 my-2">Assembly Constituency Name :</div>
+                            <input bind:value={constituencyName} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="AC name (ex. Rajura)">
+                            
+                                                                                    
+                            <div class="ml-10 mt-5 my-2">Taluka :</div>
+                            <select bind:value={constituencyTaluka} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                                <option value="Chandrapur">
+                                    Chandrapur
+                                </option>
+                                {#each talukasList as taluka}
+                                    <option value={taluka.taluka}>{taluka.taluka}</option>
+                                {/each}
+                            </select>
+                            
+                           
+                            <button on:click={registerConstituency} class="w-1/4 mx-auto mt-10 mb-4  bg-{viewMode==1?"blue-500":"transparent"} px-7 py-2 rounded-xl text-{viewMode==1?"white":"black"} transition-all transform duration-300 {viewMode==1?"hover:bg-blue-500  hover:shadow-xl hover:scale-105 text-white":""}">Register</button>
+                                             
+                        </div>
 
                         
                         <div class="overflow-y-auto bg-gray-300 flex flex-col rounded-3xl justify-center">
@@ -943,30 +1042,38 @@
 
                 {:else if viewMode==3}
 
-                <div class="overflow-x-auto  rounded-xl">
-                    <table class="min-w-full bg-white shadow-md rounded-lg">
-                      <thead>
-                        <tr class="bg-gray-800 text-white text-left">
-                          <th class="py-2 px-4">Polling Station ID</th>
-                          <th class="py-2 px-4">Polling Station</th>
-                          <th class="py-2 px-4">Address</th>
-                          <th class="py-2 px-4">Taluka</th>
-                          <th class="py-2 px-4">Operator</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {#each pollingStationList as station,station_index (station.polling_station_id)}
-                          <tr on:click={()=>{if(isAdmin)openPollingStation(station)}} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
-                            <td class="py-2 px-4">{station_index+1}</td>
-                            <td class="py-2 px-4">{station.polling_station}</td>
-                            <td class="py-2 px-4">{station.polling_address}</td>
-                            <td class="py-2 px-4">{station.taluka_name}</td>
-                            <td class="py-2 px-4">{station.operator_name}</td>
-                          </tr>
-                        {/each}
-                      </tbody>
-                    </table>
-                  </div>
+                        <div class="overflow-x-auto rounded-xl">
+                            <table class="min-w-full bg-white shadow-md rounded-lg">
+                                <thead>
+                                    <tr class="bg-gray-800 text-white text-left">
+                                        <th class="py-2 px-4">Sr.no</th>
+                                        <th class="py-2 px-4">ID</th>                                        
+                                        <th class="py-2 px-4">Polling Station</th>
+                                        <th class="py-2 px-4">AC No.</th>
+                                        <th class="py-2 px-4">AC Name</th>
+                                        <th class="py-2 px-4">Taluka</th>
+                                        <th class="py-2 px-4">Operator Name</th> 
+                                        <th class="py-2 px-4">Operator Number</th> 
+                                        <th class="py-2 px-4">Polling Station Address</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {#each pollingStationList as station, station_index (station.polling_station_id)}
+                                        <tr on:click={() => { if (isAdmin) openPollingStation(station) }} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
+                                            <td class="py-2 px-4">{station_index+1}</td> 
+                                            <td class="py-2 px-4">{station.polling_station_id}</td> 
+                                            <td class="py-2 px-4">{station.polling_station_name}</td> 
+                                            <td class="py-2 px-4">{station.ac_number}</td>
+                                            <td class="py-2 px-4">{station.ac_name}</td> 
+                                            <td class="py-2 px-4">{station.taluka_name}</td>
+                                            <td class="py-2 px-4">{station.operator_name}</td>
+                                            <td class="py-2 px-4">{station.operator_phone}</td> 
+                                            <td class="py-2 px-4">{station.polling_address}</td>
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
+                        </div>
 
                 
                 {:else if viewMode==4}
@@ -992,6 +1099,30 @@
                     </table>
                   </div>
 
+                {:else}
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="min-w-full bg-white shadow-md rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-800 text-white text-left">
+                                    <th class="py-2 px-4">Constituency ID</th>
+                                    <th class="py-2 px-4">AC Number</th>
+                                    <th class="py-2 px-4">AC Name</th>
+                                    <th class="py-2 px-4">Taluka Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {#each constituencies as constituency, index (constituency.constituency_id)}
+                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                        <td class="py-2 px-4">{index+1}</td>
+                                        <td class="py-2 px-4">{constituency.ac_number}</td>
+                                        <td class="py-2 px-4">{constituency.ac_name}</td>
+                                        <td class="py-2 px-4">{constituency.taluka_name}</td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+                    </div>          
+                    
 
                 {/if}
             </div>
