@@ -75,30 +75,30 @@ async function alterTableQuery(table, info1, info2, info3, info4, reference) {
 
             console.log(`${info1}`);
             const trimmed_taluka = info3.trim();
-            const trimmed_operator=info4.trim();
+            const trimmed_supervisor=info4.trim();
 
             const taluka_id = await pool.query(
                 'SELECT id FROM taluka WHERE taluka = $1',
                 [trimmed_taluka]
             );
             
-            const operator_id = await pool.query(
+            const supervisor_id = await pool.query(
                 'SELECT id FROM employees WHERE full_name = $1',
-                [trimmed_operator]
+                [trimmed_supervisor]
             )
 
-            if (taluka_id.rows.length === 0 || operator_id.rows.length === 0) {
+            if (taluka_id.rows.length === 0 || supervisor_id.rows.length === 0) {
                 throw new Error(`No polling station found for ${info3} or ${info4}`);
             }
 
             
             const query = `
                 UPDATE ${table}
-                SET polling_station = $1, polling_address = $2, taluka = $3, operator=$4 
+                SET polling_station = $1, polling_address = $2, taluka = $3, supervisor=$4 
                 WHERE id = $5
             `;
 
-            return { query, params: [info1,info2 ,taluka_id.rows[0].id , operator_id.rows[0].id, reference] };
+            return { query, params: [info1,info2 ,taluka_id.rows[0].id , supervisor_id.rows[0].id, reference] };
         }
         case 'employees': {
          
@@ -184,7 +184,6 @@ app.get('/getTalukas',authenticateToken,async (req,res)=>{
 
 
 app.get('/getCameras',authenticateToken,async (req,res)=>{
-    // console.log("getting cameras")
     try{
         const query = `        
             SELECT 
@@ -193,19 +192,22 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
                 polling_stations.polling_station_name AS "polling_station_name",
                 polling_stations.polling_address AS "polling_address",
                 polling_stations.id AS "polling_id",
-                employees.full_name AS "operator_name",
-                employees.phone_number AS "operator_phone",
+                employees.full_name AS "supervisor_name",
+                employees.phone_number AS "supervisor_phone",
+                operator_employee.full_name AS "operator_name",  
+                operator_employee.phone_number AS "operator_phone",  
                 constituencies.ac_name AS "ac_name",
                 constituencies.ac_number AS "ac_number"
             FROM cameras
             LEFT JOIN polling_stations ON cameras.PS = polling_stations.id
-            LEFT JOIN employees ON polling_stations.operator = employees.id
+            LEFT JOIN employees ON polling_stations.supervisor = employees.id  
+            LEFT JOIN employees operator_employee ON cameras.operator = operator_employee.id  
             LEFT JOIN constituencies ON polling_stations.constituency = constituencies.id;
         `;
- 
-    
-        const { rows } = await pool.query(query);
 
+ 
+        
+        const { rows } = await pool.query(query);
         const modifiedRows = rows.map(row => ({
             ...row,
             visible: false 
@@ -234,8 +236,8 @@ app.get('/getPollingStation',authenticateToken,async (req,res)=>{
                         ps.polling_station_name,
                         ps.polling_address,
                         t.taluka AS taluka_name,
-                        e.full_name AS operator_name,
-                        e.phone_number AS operator_phone,
+                        e.full_name AS supervisor_name,
+                        e.phone_number AS supervisor_phone,
                         c.ac_number,
                         c.ac_name,
                         c.taluka AS constituency_taluka_id
@@ -246,7 +248,7 @@ app.get('/getPollingStation',authenticateToken,async (req,res)=>{
                         LEFT JOIN
                             taluka t ON c.taluka = t.id
                         LEFT JOIN
-                            employees e ON ps.operator = e.id;
+                            employees e ON ps.supervisor = e.id;
                     `;
 
        
@@ -300,15 +302,15 @@ app.post('/registerConstituency',authenticateToken,async (req,res)=>{
 })
 
 app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
-    const {name,operator,address,constituency} = req.body
+    const {name,supervisor,address,constituency} = req.body
     try{
 
-        const operator_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[operator])
+        const supervisor_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[supervisor])
         const constituency_id = await pool.query('SELECT id FROM constituencies WHERE ac_name = $1',[constituency])
        
         const result = await pool.query(
-            'INSERT INTO polling_stations (polling_station_name, polling_address, constituency, operator) VALUES ($1, $2, $3, $4) RETURNING polling_station_name',
-            [name,address,constituency_id.rows[0].id,operator_id.rows[0].id]
+            'INSERT INTO polling_stations (polling_station_name, polling_address, constituency, supervisor) VALUES ($1, $2, $3, $4) RETURNING polling_station_name',
+            [name,address,constituency_id.rows[0].id,supervisor_id.rows[0].id]
         );
 
         const PS_address = result.rows[0].polling_station_name;
@@ -324,15 +326,16 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
 
 app.post('/registerCamera',authenticateToken,async (req,res)=>{
     // console.log("camera request received")
-    const {number,poll_station} = req.body
-    if (!number || !poll_station) {
+    const {number,poll_station,operator} = req.body
+    if (!number || !poll_station ||!operator) {
         return res.status(401).json({ message: 'Camera not registered.', done: false });
     }
 
     const trimmed_poll_station = poll_station.trim(); 
-
+    const trimmed_operator= operator.trim()
 
     try{
+        const operator_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[trimmed_operator])
         const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station_name = $1',[trimmed_poll_station])
         // console.log("pol id got")
        if (poll_id.rowCount === 0) {
@@ -341,8 +344,8 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
         }
 
         const result = await pool.query(
-            `INSERT INTO cameras (serial_number, PS, is_active) VALUES ($1, $2, $3) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
-            [number,poll_id.rows[0].id ,false]
+            `INSERT INTO cameras (serial_number, PS,operator, is_active) VALUES ($1, $2, $3,$4) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
+            [number,poll_id.rows[0].id,operator_id.rows[0].id ,false]
         );
         if(result.rows.length > 0){
             const serial_number = result.rows[0].serial_number;

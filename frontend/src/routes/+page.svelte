@@ -51,7 +51,7 @@
 
     function showThisCamera(camera){
         showingCamera=true
-        showCameraPS=camera.polling_station
+        showCameraPS=camera.polling_station_name
         showCameraM=camera.serial_number
         showCameraPA=camera.polling_address
         const video = document.getElementById(`showCameraID`);
@@ -238,7 +238,7 @@ function changeSlide() {
 
     cameraList.forEach((camera) => {
         const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
-        const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station === selectedPollingStation;
+        const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station_name === selectedPollingStation;
 
         if (matchesTaluka && matchesPollingStation) {
             visibleCamerasCount++;
@@ -263,7 +263,7 @@ function updateVisibleCameras() {
     cameraList = cameraList.map((camera, index) => {
     
     const matchesTaluka = selectedTaluka === "All" || camera.taluka_name === selectedTaluka;
-    const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station === selectedPollingStation;
+    const matchesPollingStation = selectedPollingStation === "All" || camera.polling_station_name === selectedPollingStation;
 
     if (matchesTaluka && matchesPollingStation) {
         visibleCount++;
@@ -328,7 +328,7 @@ onMount(()=>{
                                 </div>
                             </div>
                         </div>
-                        <video autoplay class="h-full w-full bg-gray-800" style="width:100%;" id='showCameraID'>
+                        <video autoplay class="h-full w-full bg-gray-800" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
@@ -359,7 +359,7 @@ onMount(()=>{
                     <select bind:value={selectedPollingStation} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
                         <option value="All">All</option>
                         {#each pollingStationList as polling_station}
-                            <option value={polling_station.polling_station}>{polling_station.polling_station}</option>
+                            <option value={polling_station.polling_station_name}>{polling_station.polling_station_name}</option>
                         {/each}
                     </select>
                 </div>
@@ -384,23 +384,23 @@ onMount(()=>{
         <!-- ye camera ka hai -->
         <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">        
                 {#each cameraList as camera}
-                    <div class="text-white bg-gray-800 {camera.visible?"flex":"hidden"} border-2 border-gray-700  flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left  rounded-lg transaction-all duration-300" >
-                        <div class="rounded-lg group  h-auto relative flex-grow w-full h-full">
-                           
-                            <video autoplay class="h-full w-full" style="width:100%;" id='{camera.serial_number}'>
-                                <track kind="captions">
-                            </video>
+                <div class="text-white relative bg-gray-800 {camera.visible ? 'flex' : 'hidden'} border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg transition-all duration-300">
+                    <div class="rounded-lg group h-auto relative flex-grow w-full h-full overflow-hidden">
+                        <video autoplay class="object-cover w-full h-full" id='{camera.serial_number}'>
+                            <track kind="captions">
+                        </video>
+                    </div>
+                    <div class="w-full bg-gray-900 relative text-base">
+                        <div class="camera_info text-white rounded-xl whitespace-nowrap overflow-hidden">
+                            PS : {camera.polling_id}, {camera.polling_station_name}, Model : {camera.serial_number}, Address : {camera.polling_address}
                         </div>
-                        <div class="w-full bg-gray-900 relative text-base overflow-hidden">
-
-                            <div class=" camera_info text-white rounded-xl  whitespace-nowrap inline-block overflow-hidden"> PS : {camera.polling_station}, Model : {camera.serial_number}, Address : {camera.polling_address}</div>
-                            <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold  ">
-                                <div class="bg-gray-900">
-                                    <button on:click={()=>{showThisCamera(camera)}} class=" px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 z-50 h-full">⛶</button>
-                                </div>
+                        <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold">
+                            <div class="bg-gray-900">
+                                <button on:click={() => { showThisCamera(camera) }} class="px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
                             </div>
                         </div>
                     </div>
+                </div>
                 {/each}
                 
         </div>

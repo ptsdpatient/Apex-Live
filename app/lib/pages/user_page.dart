@@ -34,25 +34,23 @@ class _UserPageState extends State<UserPage> {
   var serialNumberController = TextEditingController();
   var searchController = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  String? selectedPollingStationId;
+  String? selectedPollingStationId,selectedOperator;
   String? pollingStationId;
-  bool isDropdownOpen = false;
-
 
   late Future<List<String>>? cameraList;
   late Future<List<String>>? pollsList;
   late List<String> cameraData=[],pollsData=[];
   late List<String> filteredCameraList=[],filteredPollsList=[];
 
-  List<String> pollingStationIdList=['Select polling station',''];
+  List<String> pollingStationIdList=['Select polling station',''],operatorList=['Select Operator'];
 
 
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://apex-computers.live:2000/";
+  // String apiKey="http://apex-computers.live:2000/";
 
-  // String apiKey="http://192.168.1.15:2000/";
+  String apiKey="http://192.168.1.15:2000/";
 
   void showNotification(String message){
     CherryToast.success(
@@ -76,6 +74,7 @@ class _UserPageState extends State<UserPage> {
 
   void fetchInfo(){
     fetchPollingStation();
+    fetchOperators();
     cameraList=fetchCameras();
     pollsList=fetchPolls();
   }
@@ -100,7 +99,7 @@ class _UserPageState extends State<UserPage> {
         final List<dynamic> responseData = jsonDecode(response.body);
 
         return responseData.map<String>((data) {
-          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station']}';
+          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']} \n \t AC : ${data['ac_name']} \n \t ${data['operator_name']}';
         }).toList();
 
 
@@ -135,11 +134,8 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
-
-
-
         return responseData.map<String>((data) {
-          return ' PS : ${data['polling_station']}, \n \t Taluka : ${data['taluka_name']}  \n \t Address : ${data['polling_address']}';
+          return ' PS : ${data['polling_station_name']}, \n \t SuperVisor : ${data['supervisor_name']} \n \t Phone : ${data['supervisor_phone']}  \n \t Address : ${data['polling_address']}';
         }).toList();
 
 
@@ -156,6 +152,39 @@ class _UserPageState extends State<UserPage> {
     }
   }
 
+
+  Future<void> fetchOperators() async{
+    String? token = await storage.read(key: 'token');
+
+    final url = Uri.parse('${apiKey}getEmployees');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Fetched info successfully: ${response.body}');
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+        setState(() {
+          operatorList = responseData.map((data) {
+            return '${data['id']}. ${data['full_name']}';
+          }).toList();
+        });
+
+
+      } else {
+        print('Fetch failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+    }
+  }
 
   Future<void> fetchPollingStation() async{
     String? token = await storage.read(key: 'token');
@@ -177,7 +206,7 @@ class _UserPageState extends State<UserPage> {
 
         setState(() {
           pollingStationIdList = responseData.map((data) {
-            return data['polling_station'] as String;
+            return 'PS : ${data['polling_station_id']} ${data['polling_station_name']}';
           }).toList();
         });
 
@@ -232,12 +261,16 @@ class _UserPageState extends State<UserPage> {
 
 
 
-  Future<void> registerCamera(modelNumber,pollingStation) async{
+  Future<void> registerCamera(modelNumber,pollingStation,operator) async{
+    print('$modelNumber,$pollingStation,$operator');
     String? token = await storage.read(key: 'token');
     final url = Uri.parse('${apiKey}registerCamera');
+
+
     final body = jsonEncode({
       'number': modelNumber,
       'poll_station': pollingStation,
+      'operator':operator
     });
 
     try {
@@ -477,7 +510,7 @@ class _UserPageState extends State<UserPage> {
                       return
                         ClipRRect(
                           child: SizedBox(
-                            height:getHeight(context)*0.8,
+                            height:getHeight(context)*0.9,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Scaffold(
@@ -503,13 +536,13 @@ class _UserPageState extends State<UserPage> {
                                               const Row(
                                                 children: [
                                                   Padding(
-                                                    padding:EdgeInsets.only(left: 35,top: 30),
+                                                    padding:EdgeInsets.only(left: 35,top: 25),
                                                     child: Text("Polling Station : "),
                                                   )
                                                 ],
                                               ),
                                               Padding(
-                                                padding:const EdgeInsets.only(left: 25,right:25,bottom: 20,top:15),
+                                                padding:const EdgeInsets.only(left: 25,right:25,bottom: 10,top:5),
                                                 child:
                                                 CustomDropdown<String>.search(
                                                   overlayHeight: 400,
@@ -522,6 +555,29 @@ class _UserPageState extends State<UserPage> {
                                                       });
                                                   },
                                                 )
+                                              ),
+                                              const Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:EdgeInsets.only(left: 35,top: 5),
+                                                    child: Text("Operator : "),
+                                                  )
+                                                ],
+                                              ),
+                                              Padding(
+                                                  padding:const EdgeInsets.only(left: 25,right:25,bottom: 25,top:5),
+                                                  child:
+                                                  CustomDropdown<String>.search(
+                                                    overlayHeight: 400,
+                                                    hintText: 'Select Operator',
+                                                    items: operatorList,
+                                                    excludeSelected: false,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        selectedOperator=value;
+                                                      });
+                                                    },
+                                                  )
                                               ),
 
                                               ClipRRect(
@@ -574,7 +630,11 @@ class _UserPageState extends State<UserPage> {
                                 floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
                                 floatingActionButton: FloatingActionButton.large(
                                   onPressed: (){
-                                    registerCamera(serialNumberController.text,pollingStationId);
+
+
+
+
+                                    registerCamera(serialNumberController.text,pollingStationId?.replaceFirst(RegExp(r'PS : \d+ '), '').trim(),selectedOperator?.split('. ').last);
                                   },
                                   backgroundColor: Colors.blue,
                                   child: const Icon(Icons.send_rounded, size: 45, color: Colors.white),

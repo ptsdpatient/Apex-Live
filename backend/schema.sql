@@ -31,19 +31,21 @@ CREATE TABLE polling_stations(
     constituency INTEGER,
     polling_station_name TEXT,
     polling_address TEXT,
-    operator INTEGER,
+    supervisor INTEGER,
     FOREIGN KEY (constituency) REFERENCES constituencies(id),
-    FOREIGN KEY (operator) REFERENCES employees(id) ON DELETE SET NULL
+    FOREIGN KEY (supervisor) REFERENCES employees(id) ON DELETE SET NULL
 );
 
 CREATE TABLE cameras (
     id SERIAL PRIMARY KEY,
+    operator INTEGER,
     PS INTEGER ,
     FOREIGN KEY (PS) REFERENCES polling_stations(id) ON DELETE SET NULL,
     serial_number TEXT UNIQUE,
     sent_at TEXT,
     removed_at TEXT,
-    is_active BOOLEAN
+    is_active BOOLEAN,
+    FOREIGN KEY (operator) REFERENCES employees(id)
 );
 
 CREATE TABLE streams(

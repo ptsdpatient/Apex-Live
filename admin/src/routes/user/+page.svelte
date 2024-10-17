@@ -9,7 +9,7 @@
 
     let filterConstituency='All'
     let filterPollingStation='All'
-    let filterOperator='All'
+    let filtersupervisor='All'
     
     let constituencyTaluka='Chandrapur'
     let constituencNumber=''
@@ -34,12 +34,12 @@
     let editPollingStationName=''
     let editPollingStationAddress=''
     let editPollingStationTaluka=''
-    let editPollingStationOperator=''
+    let editPollingStationsupervisor=''
 
     let editTalukaName=''
 
     let pollingStationName=''
-    let pollingStationOperator=''
+    let pollingStationsupervisor=''
     let pollingStationAddress=''
     let pollingStationconstituency=''
 
@@ -51,14 +51,13 @@
     let constituencies=[]
 
     let cameraPollStation=''
+    let cameraOperator=''
     let serialNumber = '';
 
     let employeeName=''
     let employeePassword=''
     let employeeNumber=''
     let employeeAdmin=false
-
-
 
     // let url='http://117.248.105.198:2000'
     let url ='http://localhost:2000'
@@ -186,7 +185,7 @@
 
             if (!response.ok) {
                 const { error } = await response.json();
-                errorMessage = error; // Display the error message from the server
+                errorMessage = error; 
                 return;
             }
 
@@ -239,11 +238,7 @@
 
 
     async function registerPollingStation(){
-
-        
-
         try{
-
             const response = await fetch(`${url}/registerPollingStation`, {
                 method: 'POST',
                 headers: {
@@ -252,7 +247,7 @@
                 },
                 body: JSON.stringify({ 
                         name:pollingStationName,
-                        operator:pollingStationOperator,
+                        supervisor:pollingStationsupervisor,
                         address:pollingStationAddress,
                         constituency:pollingStationconstituency
                     })
@@ -327,6 +322,7 @@
                 body: JSON.stringify({ 
                     number: serialNumber,
                     poll_station: cameraPollStation,    
+                    operator:cameraOperator
                 }) 
             });
 
@@ -447,7 +443,7 @@
                 info1=editPollingStationName
                 info2=editPollingStationAddress
                 info3=editPollingStationTaluka
-                info4=editPollingStationOperator
+                info4=editPollingStationsupervisor
                 infoTable='polling_stations'
             }break;
             case 3:{
@@ -591,7 +587,7 @@
         editPollingStationName=station.polling_station
         editPollingStationAddress=station.polling_address
         editPollingStationTaluka=station.taluka_name
-        editPollingStationOperator=station.operator_name
+        editPollingStationsupervisor=station.supervisor_name
         editItem=2;
         editReference=station.polling_station_id
     }
@@ -603,16 +599,17 @@
 
         const dataToDownload = visibleCameras.map((camera,index) => ({
             "Sr.No" : (index+1),
-            "CID": camera.camera_id,
-            "Model Number" : camera.serial_number,
-            "PID": camera.polling_id,
-            "Polling Station": camera.polling_station_name,
-            "AC No." : camera.ac_number,
+            "District Name" : "Chandrapur",
+            "AC Number" : camera.ac_number,
             "AC Name" : camera.ac_name,
-            "Operator": camera.operator_name,
-            "Operator Mobile" : camera.operator_phone,
-            "Address" : camera.polling_address
-            
+            "PS Number": camera.polling_id,
+            "PS Name and Address": camera.polling_station_name,
+            "Location" : camera.polling_address,            
+            "Streaming ID": camera.serial_number,
+            "AC Supervisor Name": camera.supervisor_name,
+            "AC Supervisor No" : camera.supervisor_phone,          
+            "Operator Name": camera.operator_name,
+            "Operator No" : camera.operator_phone,            
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToDownload);
@@ -620,7 +617,7 @@
 
         XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-        XLSX.writeFile(workbook, `cameraList-${filterConstituency}-${filterOperator}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
+        XLSX.writeFile(workbook, `cameraList-${filterConstituency}-${filtersupervisor}-${filterPollingStation}-vidhansabha-${Date.now()}.xlsx`);
     }
 
     function filterCameraList(){   
@@ -631,7 +628,7 @@
             if (filterConstituency !== "All" && camera.ac_name !== filterConstituency) {
                 camera.visible = false;
             }
-            if (filterOperator !== "All" && camera.visible && camera.operator_name !== filterOperator) {
+            if (filtersupervisor !== "All" && camera.visible && camera.supervisor_name !== filtersupervisor) {
                 camera.visible = false;
             }
             if (filterPollingStation !== "All" && camera.visible && camera.polling_station_name !== filterPollingStation) {
@@ -750,9 +747,9 @@
                 {/each}
             </select>   
 
-            <div class="ml-10 mt-5 my-2">Operator :</div>
+            <div class="ml-10 mt-5 my-2">supervisor :</div>
         
-            <select bind:value={editPollingStationOperator} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+            <select bind:value={editPollingStationsupervisor} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                 {#each employeeList as employee}
                     <option value={employee.full_name}>
                         {employee.full_name}
@@ -833,8 +830,8 @@
                             </select>   
                             <!-- ikde tak -->
 
-                            <div>Operator : </div>
-                            <select bind:value={filterOperator} on:change={filterCameraList} class="px-3 py-2 rounded-xl">
+                            <div>supervisor : </div>
+                            <select bind:value={filtersupervisor} on:change={filterCameraList} class="px-3 py-2 rounded-xl">
                                 <option value="All">
                                     All
                                 </option>
@@ -870,10 +867,11 @@
                                     <th class="py-2 px-4">PID</th>
                                     <th class="py-2 px-4">Polling Station</th>
                                     <th class="py-2 px-4">AC</th>
-                                    <th class="py-2 px-4">Operator</th>
-                                    <th class="py-2 px-4">Operator Phone</th>
+                                    <th class="py-2 px-4">supervisor</th>
+                                    <th class="py-2 px-4">supervisor Phone</th>
+                                    <th class="py-2 px-4">operator</th>
+                                    <th class="py-2 px-4">operator Phone</th>                                    
                                     <th class="py-2 px-4">Address</th>
-
                                 </tr>
                             </thead>
                             <tbody>
@@ -885,8 +883,13 @@
                                         <td class="py-2 px-4">{camera.polling_id}</td>
                                         <td class="py-2 px-4">{camera.polling_station_name}</td>
                                         <td class="py-2 px-4">{camera.ac_name}</td>
+
+                                        <td class="py-2 px-4">{camera.supervisor_name}</td>
+                                        <td class="py-2 px-4">{camera.supervisor_phone}</td>
+
                                         <td class="py-2 px-4">{camera.operator_name}</td>
                                         <td class="py-2 px-4">{camera.operator_phone}</td>
+
                                         <td class="py-2 px-4">{camera.polling_address}</td>
 
                                     </tr>
@@ -905,13 +908,23 @@
                             <div class="mx-auto mt-5 mb-5 text-4xl ">Register Camera</div>
 
                             <div class="ml-10 mt-5 my-2">Polling Station :</div>
-                                <select bind:value={cameraPollStation} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
-                                    {#each pollingStationList as poll}
-                                        <option value={poll.polling_station_name}>
-                                           PS : {poll.polling_station_id} , {poll.polling_station_name}
-                                        </option>
-                                    {/each}
-                                </select>
+                            <select bind:value={cameraPollStation} class="ml-7 w-3/4 px-3 py-2 rounded-xl">                       
+                                {#each pollingStationList as poll}
+                                    <option value={poll.polling_station_name}>
+                                        PS : {poll.polling_station_id} , {poll.polling_station_name}
+                                    </option>
+                                {/each}
+                            </select>
+
+                            <div class="ml-10 mt-5 my-2">Operator :</div>
+                            <select bind:value={cameraOperator} class="ml-7 w-3/4 px-3 py-2 rounded-xl">                       
+                                {#each employeeList as employee}
+                                    <option value={employee.full_name}>
+                                        {employee.full_name}
+                                    </option>
+                                {/each}
+                            </select>
+
                             <div class="ml-10 mt-5 my-2">Serial Number :</div>
                             <input
                             bind:value={serialNumber} 
@@ -951,8 +964,8 @@
 
                             <div class="ml-10 mt-5 my-2">Polling Station :</div>
                             <input bind:value={pollingStationName} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station">
-                            <div class="ml-10 my-2">Operator :</div>
-                            <select bind:value={pollingStationOperator} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                            <div class="ml-10 my-2">Supervisor :</div>
+                            <select bind:value={pollingStationsupervisor} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                                 {#each employeeList as employee}
                                     <option value={employee.full_name}>{employee.full_name}</option>
                                 {/each}
@@ -1052,8 +1065,8 @@
                                         <th class="py-2 px-4">AC No.</th>
                                         <th class="py-2 px-4">AC Name</th>
                                         <th class="py-2 px-4">Taluka</th>
-                                        <th class="py-2 px-4">Operator Name</th> 
-                                        <th class="py-2 px-4">Operator Number</th> 
+                                        <th class="py-2 px-4">supervisor Name</th> 
+                                        <th class="py-2 px-4">supervisor Number</th> 
                                         <th class="py-2 px-4">Polling Station Address</th> 
                                     </tr>
                                 </thead>
@@ -1066,8 +1079,8 @@
                                             <td class="py-2 px-4">{station.ac_number}</td>
                                             <td class="py-2 px-4">{station.ac_name}</td> 
                                             <td class="py-2 px-4">{station.taluka_name}</td>
-                                            <td class="py-2 px-4">{station.operator_name}</td>
-                                            <td class="py-2 px-4">{station.operator_phone}</td> 
+                                            <td class="py-2 px-4">{station.supervisor_name}</td>
+                                            <td class="py-2 px-4">{station.supervisor_phone}</td> 
                                             <td class="py-2 px-4">{station.polling_address}</td>
                                         </tr>
                                     {/each}
