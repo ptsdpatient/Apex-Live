@@ -12,12 +12,14 @@
     let filtersupervisor='All'
     
     let constituencyTaluka='Chandrapur'
-    let constituencNumber=''
+    let constituencyNumber=''
     let constituencyName=''
     
+    let editConstituencyNumber=''
+    let editConstituencyName=''
 
 
-    let editItem=5
+    let editItem=6
 
     let talukaName=''    
   
@@ -26,6 +28,8 @@
 
     let editCameraSerialNumber=''
     let editCameraPollingStation=''
+    let editCameraOperator=''
+
 
     let editEmployeeName=''
     let editEmployeeNumber=''
@@ -33,7 +37,7 @@
 
     let editPollingStationName=''
     let editPollingStationAddress=''
-    let editPollingStationTaluka=''
+    let editPollingStationConstituency=''
     let editPollingStationsupervisor=''
 
     let editTalukaName=''
@@ -59,8 +63,8 @@
     let employeeNumber=''
     let employeeAdmin=false
 
-    // let url='http://117.248.105.198:2000'
-    let url ='http://localhost:2000'
+    let url='http://117.248.105.198:2000'
+    // let url ='http://localhost:2000'
 
     let token
 
@@ -198,7 +202,7 @@
 
 
     async function registerConstituency(){
-        if (!constituencyTaluka || !constituencNumber || !constituencyName) {
+        if (!constituencyTaluka || !constituencyNumber || !constituencyName) {
             alert("Missing some info for taluka");
             return;
         }
@@ -212,7 +216,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                     number:constituencNumber,
+                     number:constituencyNumber,
                      name:constituencyName,
                      taluka:constituencyTaluka,
                 })
@@ -430,6 +434,7 @@
             case 0:{
                 info1=editCameraPollingStation
                 info2=editCameraSerialNumber
+                info3=editCameraOperator
                 infoTable='cameras'
             }break;
             case 1:{
@@ -442,13 +447,16 @@
             case 2:{
                 info1=editPollingStationName
                 info2=editPollingStationAddress
-                info3=editPollingStationTaluka
+                info3=editPollingStationConstituency
                 info4=editPollingStationsupervisor
                 infoTable='polling_stations'
             }break;
             case 3:{
                 info1=editTalukaName
                 infoTable='taluka'
+            }break;
+            case 4:{
+                
             }break;
 
         }
@@ -475,7 +483,7 @@
             const data = await response.json();
 
             if(data.done){
-                editItem=5
+                editItem=6
                 showSuccessAlert("Item Altered! : " + data.info)
                 getInfo(false)    
             }
@@ -538,7 +546,7 @@
                     const data = await response.json();
 
                     if(data.done){
-                        editItem=5
+                        editItem=6
                         showSuccessAlert("Item Deleted! : " + data.info)
                         getInfo(false)    
                     }
@@ -570,9 +578,16 @@
 
     function openCamera(camera){
         editCameraSerialNumber=camera.serial_number
-        editCameraPollingStation=camera.polling_station
+        editCameraPollingStation=camera.polling_station_name
+        editCameraOperator=camera.operator_name
         editItem=0;
         editReference=camera.camera_id
+    }
+
+    function openConstituency(constituency){
+        editConstituencyNumber=constituency.ac_number
+        editConstituencyName=constituency.ac_name
+        editItem=4
     }
 
     function openEmployee(employee){
@@ -584,9 +599,9 @@
 
     }
     function openPollingStation(station){
-        editPollingStationName=station.polling_station
+        editPollingStationName=station.polling_station_name
         editPollingStationAddress=station.polling_address
-        editPollingStationTaluka=station.taluka_name
+        editPollingStationConstituency=station.ac_name
         editPollingStationsupervisor=station.supervisor_name
         editItem=2;
         editReference=station.polling_station_id
@@ -664,21 +679,57 @@
             <div class="text-5xl w-full flex flex-row justify-center mt-3">
                 Edit Camera
             </div>
-            <button on:click={()=>{editItem=5}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
+            <button on:click={()=>{editItem=6}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
         </div>
         <div style="max-height:70vh;" class="overflow-y-auto flex flex-col mx-auto w-2/3 gap-3 text-2xl my-10 bg-gray-300 rounded-xl">
             
             <div class="ml-10 mt-5 my-2">Polling Station :</div>
-            
-                <select bind:value={editCameraPollingStation} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
-                    {#each pollingStationList as poll}
-                        <option value={poll.polling_station}>
-                            {poll.polling_station}
-                        </option>
-                    {/each}
-                </select>            
+            <select bind:value={editCameraPollingStation} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                {#each pollingStationList as poll}
+                    <option value={poll.polling_station_name}>
+                        {poll.polling_station_name}
+                    </option>
+                {/each}
+            </select>
+
+            <div class="ml-10 mt-5 my-2">Operator :</div>
+            <select bind:value={editCameraOperator} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                {#each employeeList as employee}
+                    <option value={employee.full_name}>
+                        {employee.full_name}
+                    </option>
+                {/each}
+            </select>
+
             <div class="ml-10 mt-5 my-2">Serial Number :</div>
             <input bind:value={editCameraSerialNumber} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Serial Number">
+            
+            <div class="flex flex-row gap-10 w-2/3 justify-around mx-auto">
+                <button on:click={deleteItem} class=" mx-auto mt-10 mb-10 bg-white  bg-red-500 px-7 py-2 rounded-xl text-red-700 transition-all transform duration-300 hover:bg-red-500  hover:shadow-xl hover:text-white">Delete Item</button>
+                <button on:click={saveChanges} class=" mx-auto mt-10 mb-10 bg-white  bg-blue-500 px-7 py-2 rounded-xl text-blue-700 transition-all transform duration-300 hover:bg-blue-500  hover:shadow-xl hover:text-white">Save Changes</button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="{editItem==4?"flex":"hidden"} p-10 flex-col items-center fixed z-20 bg-black bg-opacity-70" style="height:100%;width:100vw">
+    <div class="w-2/3 bg-gray-100 mx-auto rounded-xl">
+        <div class="w-full flex flex-row justify-between">
+            <div class="text-5xl w-full flex flex-row justify-center mt-3">
+                Edit Constituency
+            </div>
+            <button on:click={()=>{editItem=6}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
+        </div>
+        <div style="max-height:70vh;" class="overflow-y-auto flex flex-col mx-auto w-2/3 gap-3 text-2xl my-10 bg-gray-300 rounded-xl">
+            
+            
+
+            <div class="ml-10 mt-5 my-2">Constituency Number : </div>
+            <input bind:value={editConstituencyNumber} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Serial Number">
+            <div class="ml-10 mt-5 my-2">Constituency Name : </div>
+            <input bind:value={editConstituencyName} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Serial Number">
             
             <div class="flex flex-row gap-10 w-2/3 justify-around mx-auto">
                 <button on:click={deleteItem} class=" mx-auto mt-10 mb-10 bg-white  bg-red-500 px-7 py-2 rounded-xl text-red-700 transition-all transform duration-300 hover:bg-red-500  hover:shadow-xl hover:text-white">Delete Item</button>
@@ -698,7 +749,7 @@
             <div class="text-5xl w-full flex flex-row justify-center mt-3">
                 Edit Employee
             </div>
-            <button on:click={()=>{editItem=5}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
+            <button on:click={()=>{editItem=6}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
         </div>
         <div style="max-height:70vh;" class="overflow-y-auto flex flex-col mx-auto w-2/3 gap-3 text-2xl my-10 bg-gray-300 rounded-xl">
             
@@ -725,7 +776,7 @@
             <div class="text-5xl w-full flex flex-row justify-center mt-3">
                 Edit Polling Station
             </div>
-            <button on:click={()=>{editItem=5}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
+            <button on:click={()=>{editItem=6}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
         </div>
 
 
@@ -737,12 +788,12 @@
             <input bind:value={editPollingStationAddress} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Mobile Number">
             
         
-            <div class="ml-10 mt-5 my-2">Taluka :</div>
+            <div class="ml-10 mt-5 my-2">Assembly Constituency :</div>
         
-            <select bind:value={editPollingStationTaluka} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
-                {#each talukasList as taluka}
-                    <option value={taluka.taluka}>
-                        {taluka.taluka}
+            <select bind:value={editPollingStationConstituency} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+                {#each constituencies as constituency}
+                    <option value={constituency.ac_name}>
+                        {constituency.ac_name}
                     </option>
                 {/each}
             </select>   
@@ -772,7 +823,7 @@
             <div class="text-5xl w-full flex flex-row justify-center mt-3">
                 Edit Taluka
             </div>
-            <button on:click={()=>{editItem=5}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
+            <button on:click={()=>{editItem=6}} class="mt-3 px-7 py-3 text-red-500 text-4xl">❌</button>
         </div>
         <div style="max-height:70vh;" class="overflow-y-auto flex flex-col mx-auto w-2/3 gap-3 text-2xl my-10 bg-gray-300 rounded-xl">
             
@@ -850,10 +901,7 @@
                                         PID : {poll.polling_station_id}, {poll.polling_station_name}
                                     </option>
                                 {/each}
-                            </select>    
-                            
-                            
-                            
+                            </select>                                                    
                         </div>
                     </div>
                     <div class="overflow-x-auto rounded-xl">
@@ -993,7 +1041,7 @@
                             <div class="mx-auto mt-5 mb-5 text-4xl ">Register Assembly Constituency</div>
 
                             <div class="ml-10 mt-5 my-2">Assembly Constituency Number :</div>
-                            <input bind:value={constituencNumber} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="AC number (ex. 70)">
+                            <input bind:value={constituencyNumber} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="AC number (ex. 70)">
                             
                             <div class="ml-10 mt-5 my-2">Assembly Constituency Name :</div>
                             <input bind:value={constituencyName} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="AC name (ex. Rajura)">
@@ -1106,7 +1154,7 @@
                             <td class="py-2 px-4">{taluka_index+1}</td>
                             <td class="py-2 px-4">{taluka.taluka}</td>
                           </tr>
-                        
+
                         {/each}
                       </tbody>
                     </table>
@@ -1125,7 +1173,7 @@
                             </thead>
                             <tbody>
                                 {#each constituencies as constituency, index (constituency.constituency_id)}
-                                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <tr on:click={() => { if (isAdmin) openConstituency(constituency) }} class="hover:cursor-pointer border-b border-gray-200 hover:bg-gray-100">
                                         <td class="py-2 px-4">{index+1}</td>
                                         <td class="py-2 px-4">{constituency.ac_number}</td>
                                         <td class="py-2 px-4">{constituency.ac_name}</td>

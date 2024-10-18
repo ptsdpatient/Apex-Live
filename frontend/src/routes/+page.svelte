@@ -6,7 +6,7 @@
     let token
     let interval
     let port=8080
-    let ip='apex-computers.live'
+    let ip='117.248.105.198'
     const getToken = () =>{
     return localStorage.getItem('authToken')
     }
@@ -366,7 +366,7 @@ onMount(()=>{
                     <select bind:value={selectedPollingStation} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
                         <option value="All">All</option>
                         {#each pollingStationList as polling_station}
-                            <option value={polling_station.polling_station_name}>{polling_station.polling_station_name}</option>
+                            <option value={polling_station.polling_station_name}>PID : {polling_station.polling_station_id}. {polling_station.polling_station_name}</option>
                         {/each}
                     </select>
                 </div>

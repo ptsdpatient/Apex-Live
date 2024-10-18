@@ -72,11 +72,14 @@ class _UserPageState extends State<UserPage> {
   }
 
 
-  void fetchInfo(){
+  void fetchInfo () async {
     fetchPollingStation();
     fetchOperators();
-    cameraList=fetchCameras();
-    pollsList=fetchPolls();
+    setState(() {
+      cameraList= fetchCameras();
+      pollsList=fetchPolls();
+      bottomNavIndex=bottomNavIndex;
+    });
   }
 
 
@@ -285,6 +288,7 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         print('Registered camera successfully: ${response.body}');
         showNotification("Camera Registered successfully! ${serialNumberController.text}");
+
         fetchInfo();
 
         setState(() {
@@ -422,10 +426,10 @@ class _UserPageState extends State<UserPage> {
                         builder: (context,snapshot){
                           if(snapshot.connectionState==ConnectionState.done){
 
-                            if (bottomNavIndex == 0 && cameraData.isEmpty) {
+                            if (bottomNavIndex == 0 ) {
                               cameraData = snapshot.data!;
                               filteredCameraList = List.from(cameraData);
-                            } else if (bottomNavIndex == 1 && pollsData.isEmpty) {
+                            } else if (bottomNavIndex == 1) {
                               pollsData = snapshot.data!;
                               filteredPollsList = List.from(pollsData);
                             }
@@ -495,7 +499,6 @@ class _UserPageState extends State<UserPage> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton:
-            isAdmin?
             FloatingActionButton.large(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -630,16 +633,12 @@ class _UserPageState extends State<UserPage> {
                                 floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
                                 floatingActionButton: FloatingActionButton.large(
                                   onPressed: (){
-
-
-
-
+                                    
                                     registerCamera(serialNumberController.text,pollingStationId?.replaceFirst(RegExp(r'PS : \d+ '), '').trim(),selectedOperator?.split('. ').last);
                                   },
                                   backgroundColor: Colors.blue,
                                   child: const Icon(Icons.send_rounded, size: 45, color: Colors.white),
                                 ),
-
                               ),
                             ),
                           ),
@@ -647,7 +646,7 @@ class _UserPageState extends State<UserPage> {
                     });
               },
               child:const Icon(Icons.add_a_photo,size:45),
-            ):Container(),
+            ),
         bottomNavigationBar: BottomNavigationBar(
           elevation: 20,
           backgroundColor: Colors.white,

@@ -30,7 +30,7 @@ function authenticateToken(req, res, next) {
         }
 
         req.admin= user.isAdmin
-        req.user = user; 
+        req.user = user.full_name; 
         req.error = false;
         next(); 
     });
@@ -41,6 +41,7 @@ app.get('/authenticateToken', authenticateToken, (req, res) => {
         message: 'Token is valid', 
         error: req.error, 
         done:true,
+        name:req.user,
         isAdmin: req.admin 
     });
 });
