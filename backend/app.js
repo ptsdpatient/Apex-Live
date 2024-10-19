@@ -2,11 +2,10 @@ const express = require('express');
 const pool = require('./database'); 
 require('dotenv').config();
 const app = express();
-const port = 2000;
+const port =  process.env.PORT;
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
 const secretKey='apex_live_auth'
-
 
 let index=0
 
@@ -17,7 +16,7 @@ app.use(cors())
 
 
 function authenticateToken(req, res, next) {
-    console.log("authenticating")
+    // console.log("authenticating")
     const authHeader = req.headers['authorization'];
     let token = authHeader && authHeader.split(' ')[1];
     if (!token) {
@@ -122,6 +121,15 @@ async function alterTableQuery(table, info1, info2, info3, info4, reference) {
             `;
 
             return { query, params: [info1, reference] };
+        }
+        case 'constituencies':{
+            const query = `
+            UPDATE ${table}
+            SET ac_number = $1, ac_name=$2 
+            WHERE id = $3
+        `;
+
+        return { query, params: [info1, info2, reference] };
         }
     }
 }
@@ -446,6 +454,6 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.listen(2000, () => {
-    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://0.0.0.0:${2000}\n\x1b[37m`);
+app.listen(port,'0.0.0.0', () => {
+    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://0.0.0.0:${port}\n\x1b[37m`);
 });

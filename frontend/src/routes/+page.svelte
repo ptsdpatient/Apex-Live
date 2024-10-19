@@ -1,12 +1,14 @@
 <script>
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
-    let url='http://117.248.105.198:2000'
-    // let url='http://localhost:2000'
+
+    let apiUrl = import.meta.env.VITE_API_URL;
+    let port = import.meta.env.VITE_HLS_PORT;
+
+    let url=`http://${apiUrl}:${VITE_SERVER_PORT}`
     let token
     let interval
-    let port=8080
-    let ip='117.248.105.198'
+    let ip=apiUrl
     const getToken = () =>{
     return localStorage.getItem('authToken')
     }

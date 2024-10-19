@@ -38,7 +38,7 @@
     let editPollingStationName=''
     let editPollingStationAddress=''
     let editPollingStationConstituency=''
-    let editPollingStationsupervisor=''
+    let editPollingStationSupervisor=''
 
     let editTalukaName=''
 
@@ -448,7 +448,7 @@
                 info1=editPollingStationName
                 info2=editPollingStationAddress
                 info3=editPollingStationConstituency
-                info4=editPollingStationsupervisor
+                info4=editPollingStationSupervisor
                 infoTable='polling_stations'
             }break;
             case 3:{
@@ -456,6 +456,9 @@
                 infoTable='taluka'
             }break;
             case 4:{
+                info1=editConstituencyNumber
+                info2=editConstituencyName
+                infoTable='constituencies'
                 
             }break;
 
@@ -588,6 +591,7 @@
         editConstituencyNumber=constituency.ac_number
         editConstituencyName=constituency.ac_name
         editItem=4
+        editReference=constituency.constituency_id
     }
 
     function openEmployee(employee){
@@ -602,7 +606,7 @@
         editPollingStationName=station.polling_station_name
         editPollingStationAddress=station.polling_address
         editPollingStationConstituency=station.ac_name
-        editPollingStationsupervisor=station.supervisor_name
+        editPollingStationSupervisor=station.supervisor_name
         editItem=2;
         editReference=station.polling_station_id
     }
@@ -800,7 +804,7 @@
 
             <div class="ml-10 mt-5 my-2">supervisor :</div>
         
-            <select bind:value={editPollingStationsupervisor} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
+            <select bind:value={editPollingStationSupervisor} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                 {#each employeeList as employee}
                     <option value={employee.full_name}>
                         {employee.full_name}

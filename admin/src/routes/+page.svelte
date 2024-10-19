@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte';
-    let url = 'http://117.248.105.198:2000';
-    // let url ='http://localhost:2000'
+    let port=import.meta.env.VITE_PORT;
+    let link=import.meta.env.VITE_URL
+    let url = `http://${link}:${port}`;
 
     async function authenticateToken() {
         const token = localStorage.getItem('authToken'); 
@@ -22,14 +23,13 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Token is valid; you can proceed to the user page or show user data
                 console.log('Authenticated user:', data);
                 if(data.error)window.location='/login'
                 window.location='/user'
                
             } else {
                 alert(data.error || 'Token is invalid');
-                window.location = '/login'; // Redirect to login if token is invalid
+                window.location = '/login'; 
             }
         } catch (error) {
             console.error('Error during token authentication:', error);
