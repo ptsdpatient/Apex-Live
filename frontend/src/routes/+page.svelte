@@ -3,9 +3,9 @@
     import Hls from 'hls.js';
 
     
-    let port = 2000
-
-    let url=`http://117.248.105.98:${port}`
+    let port = 8080
+    let apiUrl='117.248.105.98'
+    let url=`http://${apiUrl}:${2000}`
     let token
     let interval
     let ip=apiUrl
