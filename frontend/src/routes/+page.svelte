@@ -2,10 +2,10 @@
     import {onMount} from 'svelte'
     import Hls from 'hls.js';
 
-    let apiUrl = import.meta.env.VITE_API_URL;
-    let port = import.meta.env.VITE_HLS_PORT;
+    
+    let port = 2000
 
-    let url=`http://${apiUrl}:${VITE_SERVER_PORT}`
+    let url=`http://117.248.105.98:${port}`
     let token
     let interval
     let ip=apiUrl
