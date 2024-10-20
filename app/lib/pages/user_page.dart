@@ -30,16 +30,18 @@ class _UserPageState extends State<UserPage> {
   bool isProcessing = false;
   XFile? capturedImage;
   String? decodedQRCode;
-  bool isAdmin=true;
   var serialNumberController = TextEditingController();
   var searchController = TextEditingController();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   String? selectedPollingStationId,selectedOperator;
   String? pollingStationId;
+  String? username='Null';
 
   late Future<List<String>>? cameraList;
   late Future<List<String>>? pollsList;
-  late List<String> cameraData=[],pollsData=[];
+  late Future<List<String>>? assignmentList;
+
+  late List<String> cameraData=[],pollsData=[],assignmentData=[];
   late List<String> filteredCameraList=[],filteredPollsList=[];
 
   List<String> pollingStationIdList=['Select polling station',''],operatorList=['Select Operator'];
@@ -48,9 +50,9 @@ class _UserPageState extends State<UserPage> {
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  String apiKey="http://117.248.105.198:2000/";
+  // String apiKey="http://117.248.105.198:2000/";
 
-  // String apiKey="http://192.168.1.15:2000/";
+  String apiKey="http://192.168.1.15:2000/";
 
   void showNotification(String message){
     CherryToast.success(
@@ -78,8 +80,46 @@ class _UserPageState extends State<UserPage> {
     setState(() {
       cameraList= fetchCameras();
       pollsList=fetchPolls();
+      assignmentList=fetchAssignments();
       bottomNavIndex=bottomNavIndex;
     });
+  }
+
+
+  Future<List<String>> fetchAssignments() async{
+    String? token = await storage.read(key: 'token');
+
+    final url = Uri.parse('${apiKey}myCameraList');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // print('Fetched info successfully: ${response.body}');
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+        return responseData.map<String>((data) {
+          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']} \n \t AC : ${data['ac_name']} \n \t  Supervisor : ${data['supervisor_name']} \n \t Operator : ${data['operator_name']}';
+        }).toList();
+
+
+      } else {
+        print('Fetch failed: ${response.statusCode} - ${response.body}');
+
+        return [];
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+
+      return [];
+
+    }
   }
 
 
@@ -98,7 +138,7 @@ class _UserPageState extends State<UserPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Fetched info successfully: ${response.body}');
+        // print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
 
         return responseData.map<String>((data) {
@@ -135,7 +175,7 @@ class _UserPageState extends State<UserPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Fetched info successfully: ${response.body}');
+        // print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
         return responseData.map<String>((data) {
           return ' PS : ${data['polling_station_name']}, \n \t SuperVisor : ${data['supervisor_name']} \n \t Phone : ${data['supervisor_phone']}  \n \t Address : ${data['polling_address']}';
@@ -171,7 +211,7 @@ class _UserPageState extends State<UserPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Fetched info successfully: ${response.body}');
+        // print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
 
         setState(() {
@@ -204,7 +244,7 @@ class _UserPageState extends State<UserPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Fetched info successfully: ${response.body}');
+        // print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
 
         setState(() {
@@ -225,7 +265,7 @@ class _UserPageState extends State<UserPage> {
   Future<void> authenticateToken() async {
     String? token = await storage.read(key: 'token');
 
-    final url = Uri.parse('${apiKey}getPollingStation');
+    final url = Uri.parse('${apiKey}authenticateToken');
 
     try {
       if (token==null){
@@ -242,15 +282,9 @@ class _UserPageState extends State<UserPage> {
       if (response.statusCode == 200) {
         // print('Login successful: ${response.body}');
         final responseData = jsonDecode(response.body);
-        // print('admin thing is this value : '+responseData['isAdmin']);
-
         setState(() {
-          isAdmin = responseData['isAdmin'] == true || responseData['isAdmin'] == 'true';
+          username=responseData['name'];
         });
-
-
-
-        print('admin is $isAdmin');
 
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
@@ -265,7 +299,9 @@ class _UserPageState extends State<UserPage> {
 
 
   Future<void> registerCamera(modelNumber,pollingStation,operator) async{
-    print('$modelNumber,$pollingStation,$operator');
+
+    // print('$modelNumber,$pollingStation,$operator');
+
     String? token = await storage.read(key: 'token');
     final url = Uri.parse('${apiKey}registerCamera');
 
@@ -380,8 +416,8 @@ class _UserPageState extends State<UserPage> {
               floating: true,
               pinned:false,
 
-              centerTitle: true,
-              title: Text(bottomNavIndex==0?"Cameras":"Polling Stations"),
+              centerTitle: false,
+              title: Text('$username'),
               actions: [
                 IconButton(
                     onPressed: (){
@@ -398,20 +434,21 @@ class _UserPageState extends State<UserPage> {
             SliverToBoxAdapter(
               child:Column(
                 children: [
-                    Padding(
+                    bottomNavIndex==0?Container():
+                  Padding(
                       padding: const EdgeInsets.only(left: 24, right: 24, top: 14),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: TextField(
                           onChanged: (value){
-                            bottomNavIndex==0?filterCamera(value):filterPollingStation(value);
+                            bottomNavIndex==1?filterCamera(value):filterPollingStation(value);
                           },
                           controller: searchController,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
                             prefixIcon: Icon(Icons.search_rounded,size:35,color:Colors.blue),
-                            hintText: "Search ${bottomNavIndex==0?"Cameras":"Polls"}",
+                            hintText: "Search ${bottomNavIndex==1?"Cameras":"Polls"}",
                             hintStyle: TextStyle(
                                 color:Colors.grey.shade700
                             ),
@@ -422,7 +459,7 @@ class _UserPageState extends State<UserPage> {
                       ),
                     ),
                     FutureBuilder(
-                        future:bottomNavIndex==0? cameraList:pollsList,
+                        future:bottomNavIndex==0? cameraList:bottomNavIndex==1?pollsList:assignmentList,
                         builder: (context,snapshot){
                           if(snapshot.connectionState==ConnectionState.done){
 
@@ -432,8 +469,10 @@ class _UserPageState extends State<UserPage> {
                             } else if (bottomNavIndex == 1) {
                               pollsData = snapshot.data!;
                               filteredPollsList = List.from(pollsData);
+                            } else{
+                              assignmentData = snapshot.data!;
                             }
-                            List<String> data = (bottomNavIndex == 0) ? filteredCameraList : filteredPollsList;
+                            List<String> data = (bottomNavIndex == 0) ? filteredCameraList : bottomNavIndex==1? filteredPollsList:assignmentData;
                             return ListView.builder(
                                 shrinkWrap: true,
                                 physics: const BouncingScrollPhysics(),
@@ -444,7 +483,7 @@ class _UserPageState extends State<UserPage> {
                                   padding: EdgeInsets.symmetric(horizontal: 20,vertical: 5),
                                   child: GestureDetector(
                                     onTap: (){
-                                        if(bottomNavIndex==1) return;
+                                        if(bottomNavIndex!=2) return;
                                         RegExp regExp = RegExp(r'CID : (.+?),');
                                         Match? match = regExp.firstMatch(item);
 
@@ -559,29 +598,6 @@ class _UserPageState extends State<UserPage> {
                                                   },
                                                 )
                                               ),
-                                              const Row(
-                                                children: [
-                                                  Padding(
-                                                    padding:EdgeInsets.only(left: 35,top: 5),
-                                                    child: Text("Operator : "),
-                                                  )
-                                                ],
-                                              ),
-                                              Padding(
-                                                  padding:const EdgeInsets.only(left: 25,right:25,bottom: 25,top:5),
-                                                  child:
-                                                  CustomDropdown<String>.search(
-                                                    overlayHeight: 400,
-                                                    hintText: 'Select Operator',
-                                                    items: operatorList,
-                                                    excludeSelected: false,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        selectedOperator=value;
-                                                      });
-                                                    },
-                                                  )
-                                              ),
 
                                               ClipRRect(
                                                 borderRadius: BorderRadius.circular(20),
@@ -634,7 +650,7 @@ class _UserPageState extends State<UserPage> {
                                 floatingActionButton: FloatingActionButton.large(
                                   onPressed: (){
                                     
-                                    registerCamera(serialNumberController.text,pollingStationId?.replaceFirst(RegExp(r'PS : \d+ '), '').trim(),selectedOperator?.split('. ').last);
+                                    registerCamera(serialNumberController.text,pollingStationId?.replaceFirst(RegExp(r'PS : \d+ '), '').trim(),username);
                                   },
                                   backgroundColor: Colors.blue,
                                   child: const Icon(Icons.send_rounded, size: 45, color: Colors.white),
@@ -663,6 +679,20 @@ class _UserPageState extends State<UserPage> {
           ),
           fixedColor: Colors.blue,
           items: const [
+
+            BottomNavigationBarItem(
+              // backgroundColor: Colors.green,
+              icon: Icon(
+                  Icons.assignment_rounded,
+                  size:35
+              ),
+              label: "Alloted",
+              activeIcon: Icon(
+                  Icons.assignment_rounded,
+                  size:40
+
+              ),
+            ),
             BottomNavigationBarItem(
               // backgroundColor: Colors.green,
               icon: Icon(

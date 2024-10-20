@@ -27,21 +27,21 @@ function authenticateToken(req, res, next) {
         if (err) {
             return res.status(403).json({ error: 'Token is invalid' }); 
         }
-
         req.admin= user.isAdmin
-        req.user = user.full_name; 
+        req.user = user.name; 
         req.error = false;
         next(); 
     });
 }
 
 app.get('/authenticateToken', authenticateToken, (req, res) => {
+    // console.log(req.user)
     res.status(200).json({ 
         message: 'Token is valid', 
         error: req.error, 
-        done:true,
         name:req.user,
-        isAdmin: req.admin 
+        isAdmin:req.admin,
+        done:true,
     });
 });
 
@@ -237,6 +237,52 @@ app.get('/',(req,res)=>{
     res.send('endpoint is working!')
 })
 
+app.get('/myCameraList', authenticateToken, async (req, res) => {
+    const { operator } = req.body;
+    try {
+        // Get the operator ID using the full name
+        const operatorResult = await pool.query(`
+            SELECT id FROM employees WHERE full_name = $1;
+        `, [operator.trim()]);
+
+        if (operatorResult.rowCount === 0) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        const operatorId = operatorResult.rows[0].id;
+
+        // Fetch cameras where the employee is either an operator or supervisor
+        const { rows } = await pool.query(`
+            SELECT 
+                cameras.id AS "camera_id",
+                cameras.serial_number AS "serial_number",
+                polling_stations.polling_station_name AS "polling_station_name",
+                polling_stations.polling_address AS "polling_address",
+                polling_stations.id AS "polling_id",
+                employees.full_name AS "supervisor_name",
+                employees.phone_number AS "supervisor_phone",
+                operator_employee.full_name AS "operator_name",
+                operator_employee.phone_number AS "operator_phone",
+                constituencies.ac_name AS "ac_name",
+                constituencies.ac_number AS "ac_number"
+            FROM cameras
+            LEFT JOIN polling_stations ON cameras.PS = polling_stations.id
+            LEFT JOIN employees AS supervisor_employee ON polling_stations.supervisor = supervisor_employee.id  
+            LEFT JOIN employees AS operator_employee ON cameras.operator = operator_employee.id  
+            LEFT JOIN constituencies ON polling_stations.constituency = constituencies.id
+            WHERE 
+                polling_stations.supervisor = $1 
+                OR cameras.operator = $1;
+        `, [operatorId]);
+
+        res.status(200).json(rows);
+
+    } catch (err) {
+        return res.status(500).json({ message: "Error occurred: " + err });
+    }
+});
+
+
 app.get('/getPollingStation',authenticateToken,async (req,res)=>{
     // console.log("getting ps")
     try{
@@ -415,8 +461,6 @@ app.post('/registerTaluka',authenticateToken,async (req,res)=>{
 app.post('/login', async (req, res) => {
     const { name, password } = req.body;
 
-    console.log("login initiated",name,password)
-
     if (!name || !password) {
         console.log('-> Missing name or password');
         return res.status(400).json({ error: 'name and password are required' });
@@ -433,14 +477,19 @@ app.post('/login', async (req, res) => {
         const storedPassword = rows[0].pass;
 
         if (password === storedPassword) {
-            const token = jwt.sign({ userId: rows[0].id, isAdmin: (rows[0].is_admin !== 0) }, secretKey, { expiresIn: '24h' });
+            const token = jwt.sign({
+                 userId: rows[0].id, 
+                 name:name,
+                 isAdmin: (rows[0].is_admin !== 0) }, 
+                 secretKey, { expiresIn: '24h' }
+                );
             console.log('-> Login request successful with:', name);
             return res.status(200).json({
                 user: {
                     id: rows[0].id,
-                    full_name: name,
                     isAdmin: rows[0].is_admin !== 0,
                 },
+                full_name: name,
                 token:token,
                 admin: rows[0].is_admin !== 0
             });

@@ -21,7 +21,8 @@ class _LoginPageState extends State<LoginPage>{
 
   // String apiKey="http://apex-computers.live:2000/";
 
-  String apiKey="http://117.248.105.198:2000/";
+  // String apiKey="http://117.248.105.198:2000/";
+  String apiKey="http://192.168.1.15:2000/";
 
 
   @override
@@ -121,7 +122,7 @@ class _LoginPageState extends State<LoginPage>{
                     controller: password,
                     label: 'password',
                     icon: Icons.password,
-                  ),Button(context, getWidth(context)*0.5, 'login', () async {
+                  ),Button(context, getWidth(context)*0.4, 'login', () async {
                     await loginUser(username.text, password.text) as Future<void> Function();
                   })
             ],

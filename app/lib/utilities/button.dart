@@ -11,7 +11,7 @@ Widget Button(BuildContext context,double w,String label,Future<void> Function()
           width: w,
           decoration: BoxDecoration(
             color: Colors.blueAccent,
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(17),
           ),  child:Padding(padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 13),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

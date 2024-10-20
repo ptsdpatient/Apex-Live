@@ -63,8 +63,8 @@
     let employeeNumber=''
     let employeeAdmin=false
 
-    let url='http://117.248.105.198:2000'
-    // let url ='http://localhost:2000'
+    // let url='http://117.248.105.198:2000'
+    let url ='http://localhost:2000'
 
     let token
 
@@ -411,7 +411,8 @@
                 console.log('Authenticated user:', data);
                 if(data.error) window.location='/login'
                 isAdmin=data.isAdmin
-                if(isAdmin)viewMode=1
+                viewMode=isAdmin?1:0
+                // alert(viewMode)
             }
 
             if (response.ok) {
@@ -846,14 +847,14 @@
     <div class="w-full  h-full rounded-xl  text-xl mb-24">
         <div class="w-full pl-10 fixed bg-white bg-opacity-30  flex flex-row justify-between px-2 py-5 z-10 backdrop-blur-xl ">
             <div class=" flex flex-row gap-3">
-                <button on:click={()=>{viewMode=0}} class="bg-{viewMode==0?"green-700":"transparent"} px-7 order-1 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==0?"white":"black"} transition-all transform duration-300 {viewMode==0?"hover:bg-green-600 hover:shadow-xl hover:scale-105 text-white":""}">Cameras</button>
-                <button on:click={()=>{viewMode=2}} class="bg-{viewMode==2?"purple-700":"transparent"} px-7 order-2 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==2?"white":"black"} transition-all transform duration-300 {viewMode==2?"hover:bg-purple-600  hover:shadow-xl hover:scale-105 text-white":""}">Employees</button>
+                <button on:click={()=>{viewMode=0}} class:bg-green-700={viewMode===0} class=" px-7 order-1 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==0?"white":"black"} transition-all transform duration-300 {viewMode==0?"hover:bg-green-600 hover:shadow-xl hover:scale-105 text-white":""}">Cameras</button>
+                <button on:click={()=>{viewMode=2}} class:bg-purple-700={viewMode===2} class="px-7 order-2 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==2?"white":"black"} transition-all transform duration-300 {viewMode==2?"hover:bg-purple-600  hover:shadow-xl hover:scale-105 text-white":""}">Employees</button>
                 {#if isAdmin}
-                    <button on:click={()=>{viewMode=1}} class="bg-{viewMode==1?"orange-500":"transparent"} px-7 order-0 transform hover:scale-105 duration-300 transition-all py-2 rounded-xl text-{viewMode==1?"white":"black"} transition-all transform duration-300 {viewMode==1?"hover:bg-orange-400  hover:shadow-xl hover:scale-105 text-white":""}">Register</button>
+                    <button on:click={()=>{viewMode=1}} class:bg-orange-500={viewMode===1}   class=" px-7 order-0 transform hover:scale-105 duration-300 transition-all py-2 rounded-xl text-{viewMode==1?"white":"black"} transition-all transform duration-300 {viewMode==1?"hover:bg-orange-400 hover:shadow-xl hover:scale-105 text-white":""}">Register</button>
                 {/if}
-                <button on:click={()=>{viewMode=3}} class="bg-{viewMode==3?"yellow-500":"transparent"} px-7 order-3 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==3?"white":"black"} transition-all transform duration-300 {viewMode==3?"hover:bg-yellow-500  hover:shadow-xl hover:scale-105 text-white":""}">Polling Stations</button>
-                <button on:click={()=>{viewMode=4}} class="bg-{viewMode==4?"red-500":"transparent"} px-7 order-5 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==4?"white":"black"} transition-all transform duration-300 {viewMode==4?"hover:bg-red-500  hover:shadow-xl hover:scale-105 text-white":""}">Talukas</button>
-                <button on:click={()=>{viewMode=5}} class="bg-{viewMode==5?"red-700":"transparent"} px-7 order-4 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==5?"white":"black"} transition-all transform duration-300 {viewMode==5?"hover:bg-red-700  hover:shadow-xl hover:scale-105 text-white":""}">Constituencies</button>
+                <button on:click={()=>{viewMode=3}} class:bg-yellow-500={viewMode===3} class=" px-7 order-3 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==3?"white":"black"} transition-all transform duration-300 {viewMode==3?"hover:bg-yellow-500  hover:shadow-xl hover:scale-105 text-white":""}">Polling Stations</button>
+                <button on:click={()=>{viewMode=4}}  class:bg-red-500={viewMode===4} class="px-7 order-5 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==4?"white":"black"} transition-all transform duration-300 {viewMode==4?"hover:bg-red-500  hover:shadow-xl hover:scale-105 text-white":""}">Talukas</button>
+                <button on:click={()=>{viewMode=5}}  class:bg-red-700={viewMode===5} class="px-7 order-4 py-2 transform hover:scale-105 duration-300 transition-all rounded-xl text-{viewMode==5?"white":"black"} transition-all transform duration-300 {viewMode==5?"hover:bg-red-700  hover:shadow-xl hover:scale-105 text-white":""}">Constituencies</button>
                 
             </div>
             
