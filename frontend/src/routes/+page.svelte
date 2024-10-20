@@ -4,7 +4,8 @@
 
     
     let port = 8080
-    let apiUrl='117.248.105.98'
+    // let apiUrl='117.248.105.98'
+    let apiUrl='localhost'
     let url=`http://${apiUrl}:${2000}`
     let token
     let interval
