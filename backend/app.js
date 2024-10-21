@@ -237,21 +237,24 @@ app.get('/',(req,res)=>{
     res.send('endpoint is working!')
 })
 
-app.get('/myCameraList', authenticateToken, async (req, res) => {
+app.post('/myCameraList', authenticateToken, async (req, res) => {
     const { operator } = req.body;
+    console.log(operator)
     try {
-        // Get the operator ID using the full name
+
         const operatorResult = await pool.query(`
             SELECT id FROM employees WHERE full_name = $1;
         `, [operator.trim()]);
 
+
         if (operatorResult.rowCount === 0) {
+            console.log("employee not found")
             return res.status(404).json({ message: "Employee not found" });
         }
 
         const operatorId = operatorResult.rows[0].id;
+        
 
-        // Fetch cameras where the employee is either an operator or supervisor
         const { rows } = await pool.query(`
             SELECT 
                 cameras.id AS "camera_id",
@@ -259,8 +262,8 @@ app.get('/myCameraList', authenticateToken, async (req, res) => {
                 polling_stations.polling_station_name AS "polling_station_name",
                 polling_stations.polling_address AS "polling_address",
                 polling_stations.id AS "polling_id",
-                employees.full_name AS "supervisor_name",
-                employees.phone_number AS "supervisor_phone",
+                supervisor_employee.full_name AS "supervisor_name",
+                supervisor_employee.phone_number AS "supervisor_phone",
                 operator_employee.full_name AS "operator_name",
                 operator_employee.phone_number AS "operator_phone",
                 constituencies.ac_name AS "ac_name",
@@ -275,9 +278,11 @@ app.get('/myCameraList', authenticateToken, async (req, res) => {
                 OR cameras.operator = $1;
         `, [operatorId]);
 
+
         res.status(200).json(rows);
 
     } catch (err) {
+        console.log("error occurred : "+err)
         return res.status(500).json({ message: "Error occurred: " + err });
     }
 });

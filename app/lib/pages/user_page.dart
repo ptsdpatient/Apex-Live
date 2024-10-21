@@ -74,7 +74,7 @@ class _UserPageState extends State<UserPage> {
   }
 
 
-  void fetchInfo () async {
+  void fetchInfo () {
     fetchPollingStation();
     fetchOperators();
     setState(() {
@@ -89,15 +89,20 @@ class _UserPageState extends State<UserPage> {
   Future<List<String>> fetchAssignments() async{
     String? token = await storage.read(key: 'token');
 
+    final body = jsonEncode({
+      'operator':username
+    });
+
     final url = Uri.parse('${apiKey}myCameraList');
 
     try {
-      final response = await http.get(
+      final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
+        body:body
       );
 
       if (response.statusCode == 200) {
@@ -105,7 +110,7 @@ class _UserPageState extends State<UserPage> {
         final List<dynamic> responseData = jsonDecode(response.body);
 
         return responseData.map<String>((data) {
-          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']} \n \t AC : ${data['ac_name']} \n \t  Supervisor : ${data['supervisor_name']} \n \t Operator : ${data['operator_name']}';
+          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']}, \n \t AC : ${data['ac_name']}, \n \t  Supervisor : ${data['supervisor_name']}, \n \t Operator : ${data['operator_name']}';
         }).toList();
 
 
@@ -142,7 +147,7 @@ class _UserPageState extends State<UserPage> {
         final List<dynamic> responseData = jsonDecode(response.body);
 
         return responseData.map<String>((data) {
-          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']} \n \t AC : ${data['ac_name']} \n \t ${data['operator_name']}';
+          return ' CID : ${data['serial_number']}, \n \t PS : ${data['polling_station_name']}, \n \t AC : ${data['ac_name']}, \n \t OP : ${data['operator_name']}';
         }).toList();
 
 
@@ -178,7 +183,7 @@ class _UserPageState extends State<UserPage> {
         // print('Fetched info successfully: ${response.body}');
         final List<dynamic> responseData = jsonDecode(response.body);
         return responseData.map<String>((data) {
-          return ' PS : ${data['polling_station_name']}, \n \t SuperVisor : ${data['supervisor_name']} \n \t Phone : ${data['supervisor_phone']}  \n \t Address : ${data['polling_address']}';
+          return ' PS : ${data['polling_station_name']}, \n \t Supervisor : ${data['supervisor_name']}, \n \t Phone : ${data['supervisor_phone']},  \n \t Address : ${data['polling_address']}';
         }).toList();
 
 
@@ -283,7 +288,7 @@ class _UserPageState extends State<UserPage> {
         // print('Login successful: ${response.body}');
         final responseData = jsonDecode(response.body);
         setState(() {
-          username=responseData['name'];
+          username= responseData['name'];
         });
 
       } else {
@@ -375,11 +380,10 @@ class _UserPageState extends State<UserPage> {
     // TODO: implement initState
     super.initState();
     authenticateToken();
-    fetchInfo();
     // cameraList=fetchCameras();
     // pollsList=fetchPolls();
     _requestCameraPermission();
-
+    fetchInfo();
   }
 
   Future<void> _requestCameraPermission() async {
@@ -459,20 +463,20 @@ class _UserPageState extends State<UserPage> {
                       ),
                     ),
                     FutureBuilder(
-                        future:bottomNavIndex==0? cameraList:bottomNavIndex==1?pollsList:assignmentList,
+                        future:bottomNavIndex==1? cameraList:bottomNavIndex==2?pollsList:assignmentList,
                         builder: (context,snapshot){
                           if(snapshot.connectionState==ConnectionState.done){
 
-                            if (bottomNavIndex == 0 ) {
+                            if (bottomNavIndex == 1 ) {
                               cameraData = snapshot.data!;
                               filteredCameraList = List.from(cameraData);
-                            } else if (bottomNavIndex == 1) {
+                            } else if (bottomNavIndex == 2) {
                               pollsData = snapshot.data!;
                               filteredPollsList = List.from(pollsData);
                             } else{
                               assignmentData = snapshot.data!;
                             }
-                            List<String> data = (bottomNavIndex == 0) ? filteredCameraList : bottomNavIndex==1? filteredPollsList:assignmentData;
+                            List<String> data = (bottomNavIndex == 1) ? filteredCameraList : bottomNavIndex==2? filteredPollsList:assignmentData;
                             return ListView.builder(
                                 shrinkWrap: true,
                                 physics: const BouncingScrollPhysics(),
@@ -483,7 +487,7 @@ class _UserPageState extends State<UserPage> {
                                   padding: EdgeInsets.symmetric(horizontal: 20,vertical: 5),
                                   child: GestureDetector(
                                     onTap: (){
-                                        if(bottomNavIndex!=2) return;
+                                        if(bottomNavIndex==2) return;
                                         RegExp regExp = RegExp(r'CID : (.+?),');
                                         Match? match = regExp.firstMatch(item);
 
@@ -496,7 +500,10 @@ class _UserPageState extends State<UserPage> {
                                             return ClipRRect(
                                               borderRadius: BorderRadius.circular(25),
                                               child: Scaffold(
+                                                backgroundColor: Colors.white,
                                                 appBar: AppBar(
+                                                  backgroundColor: Colors.blue,
+                                                  foregroundColor: Colors.white,
                                                   title: Text('CID : $serialNumber'),
                                                   automaticallyImplyLeading: false,
                                                 ),
@@ -514,7 +521,7 @@ class _UserPageState extends State<UserPage> {
                                       ),
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 10,vertical:10),
-                                        child: Text('\t${index+1}. $item'),
+                                        child: Text('\t${index+1}. $item',style: TextStyle(color:Colors.black),),
 
                                       ),
                                     ),
@@ -565,6 +572,8 @@ class _UserPageState extends State<UserPage> {
                                     const SliverAppBar(
                                       pinned:false,
                                       floating: true,
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
                                       title: Text("Register Camera"),
                                       automaticallyImplyLeading: false,
                                       centerTitle: true,
@@ -584,7 +593,7 @@ class _UserPageState extends State<UserPage> {
                                                 ],
                                               ),
                                               Padding(
-                                                padding:const EdgeInsets.only(left: 25,right:25,bottom: 10,top:5),
+                                                padding:const EdgeInsets.only(left: 25,right:25,bottom: 30,top:5),
                                                 child:
                                                 CustomDropdown<String>.search(
                                                   overlayHeight: 400,
@@ -748,6 +757,7 @@ class _HlsStreamPlayerState extends State<HlsStreamPlayer> {
   @override
   void initState() {
     super.initState();
+
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
       ..initialize().then((_) {
         setState(() {
