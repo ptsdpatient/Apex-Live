@@ -5,8 +5,8 @@
     
     let port = 8080
     // let apiUrl='117.248.105.98'
-    let apiUrl='localhost'
-    let url=`http://${apiUrl}:${2000}`
+    let apiUrl='apex-computers.live'
+    let url=`https://${apiUrl}/api`
     let token
     let interval
     let ip=apiUrl
@@ -70,7 +70,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/hls/${camera.serial_number}.m3u8`;
+        const sourceUrl = `https://${ip}:${port}/hls/${camera.serial_number}.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         
@@ -197,7 +197,7 @@
         }
 
         const hls = new Hls();
-        const sourceUrl = `http://${ip}:${port}/hls/${serialNumber}.m3u8`;
+        const sourceUrl = `https://${ip}:${port}/hls/${serialNumber}.m3u8`;
 
         console.log(`Loading HLS source: ${sourceUrl}`);
         

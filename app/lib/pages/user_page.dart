@@ -50,9 +50,9 @@ class _UserPageState extends State<UserPage> {
   // final apiKey=dotenv.env['API_KEY']!;
   // final apiKey="";
 
-  // String apiKey="http://117.248.105.198:2000/";
+  // String apiKey="http://117.248.105.198:2000/api/";
 
-  String apiKey="http://192.168.1.15:2000/";
+  String apiKey="https://apex-computers.live/api/";
 
   void showNotification(String message){
     CherryToast.success(
@@ -496,7 +496,7 @@ class _UserPageState extends State<UserPage> {
 
                                         if (match != null) {
                                           String serialNumber = match.group(1)!.trim();
-                                          String hlsUrl = 'http://apex-computers.live:8080/hls/$serialNumber.m3u8';
+                                          String hlsUrl = 'http://117.248.105.198:8080/hls/$serialNumber.m3u8';
                                           showModalBottomSheet(
                                             context: context,
                                             builder: (BuildContext context) {

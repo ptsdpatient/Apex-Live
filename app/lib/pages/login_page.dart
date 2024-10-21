@@ -21,8 +21,8 @@ class _LoginPageState extends State<LoginPage>{
 
   // String apiKey="http://apex-computers.live:2000/";
 
-  // String apiKey="http://117.248.105.198:2000/";
-  String apiKey="http://192.168.1.15:2000/";
+  // String apiKey="http://117.248.105.198:2000/api/";
+  String apiKey="https://apex-computers.live/api/";
 
 
   @override
@@ -79,10 +79,12 @@ class _LoginPageState extends State<LoginPage>{
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        await saveName(responseData['full_name']);
 
         if (responseData.containsKey('token')) {
           String token = responseData['token'];
           await saveToken(token);
+
 
           print('Login successful: ${response.body}');
           Navigator.pushNamed(context, '/user');

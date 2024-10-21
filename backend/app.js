@@ -34,7 +34,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-app.get('/authenticateToken', authenticateToken, (req, res) => {
+app.get('/api/authenticateToken', authenticateToken, (req, res) => {
     // console.log(req.user)
     res.status(200).json({ 
         message: 'Token is valid', 
@@ -134,7 +134,7 @@ async function alterTableQuery(table, info1, info2, info3, info4, reference) {
     }
 }
 
-app.post('/editItem', authenticateToken, async (req, res) => {
+app.post('/api/editItem', authenticateToken, async (req, res) => {
     const { info1, info2, info3, info4, reference, table } = req.body;
 
     try {
@@ -154,7 +154,7 @@ app.post('/editItem', authenticateToken, async (req, res) => {
 });
 
 
-app.post('/deleteItem',authenticateToken,async (req,res)=>{
+app.post('/api/deleteItem',authenticateToken,async (req,res)=>{
     const {table,reference} =req.body
     try{
         const query=`
@@ -172,7 +172,7 @@ app.post('/deleteItem',authenticateToken,async (req,res)=>{
 
 
 
-app.get('/getEmployees',authenticateToken,async (req,res)=>{
+app.get('/api/getEmployees',authenticateToken,async (req,res)=>{
     try{
         const { rows } = await pool.query('SELECT id, full_name, is_admin,phone_number FROM employees');
         res.status(200).json(rows);
@@ -181,7 +181,7 @@ app.get('/getEmployees',authenticateToken,async (req,res)=>{
     }
 })
 
-app.get('/getTalukas',authenticateToken,async (req,res)=>{
+app.get('/api/getTalukas',authenticateToken,async (req,res)=>{
     try{
         const { rows } = await pool.query('SELECT id, taluka FROM taluka');
 
@@ -192,7 +192,7 @@ app.get('/getTalukas',authenticateToken,async (req,res)=>{
 })
 
 
-app.get('/getCameras',authenticateToken,async (req,res)=>{
+app.get('/api/getCameras',authenticateToken,async (req,res)=>{
     try{
         const query = `        
             SELECT 
@@ -231,13 +231,13 @@ app.get('/getCameras',authenticateToken,async (req,res)=>{
 })
 
 
-app.get('/',(req,res)=>{
+app.get('/api/',(req,res)=>{
     console.log(`[${index}] port is working`)
     index++
     res.send('endpoint is working!')
 })
 
-app.post('/myCameraList', authenticateToken, async (req, res) => {
+app.post('/api/myCameraList', authenticateToken, async (req, res) => {
     const { operator } = req.body;
     console.log(operator)
     try {
@@ -288,7 +288,7 @@ app.post('/myCameraList', authenticateToken, async (req, res) => {
 });
 
 
-app.get('/getPollingStation',authenticateToken,async (req,res)=>{
+app.get('/api/getPollingStation',authenticateToken,async (req,res)=>{
     // console.log("getting ps")
     try{
         const query = `         
@@ -321,7 +321,7 @@ app.get('/getPollingStation',authenticateToken,async (req,res)=>{
 })
 
 
-app.get('/getConstituencies',authenticateToken,async (req,res)=>{
+app.get('/api/getConstituencies',authenticateToken,async (req,res)=>{
     // console.log("getting constituency")
     try{
         const query = `        
@@ -344,7 +344,7 @@ app.get('/getConstituencies',authenticateToken,async (req,res)=>{
     }
 })
 
-app.post('/registerConstituency',authenticateToken,async (req,res)=>{
+app.post('/api/registerConstituency',authenticateToken,async (req,res)=>{
     const {number,name,taluka} = req.body
     try{
         const taluka_id = await pool.query('SELECT id FROM taluka WHERE taluka = $1',[taluka])
@@ -362,7 +362,7 @@ app.post('/registerConstituency',authenticateToken,async (req,res)=>{
     }
 })
 
-app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
+app.post('/api/registerPollingStation',authenticateToken,async (req,res)=>{
     const {name,supervisor,address,constituency} = req.body
     try{
 
@@ -385,7 +385,7 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
 })
 
 
-app.post('/registerCamera',authenticateToken,async (req,res)=>{
+app.post('/api/registerCamera',authenticateToken,async (req,res)=>{
     console.log("camera request received")
     const {number,poll_station,operator} = req.body
     if (!number || !poll_station ||!operator) {
@@ -424,7 +424,7 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
 })
 
 
-app.post('/registerEmployee',authenticateToken,async (req,res)=>{
+app.post('/api/registerEmployee',authenticateToken,async (req,res)=>{
     const {name,password,number,isAdmin} = req.body
     
     try{
@@ -445,7 +445,7 @@ app.post('/registerEmployee',authenticateToken,async (req,res)=>{
 })
 
 
-app.post('/registerTaluka',authenticateToken,async (req,res)=>{
+app.post('/api/registerTaluka',authenticateToken,async (req,res)=>{
     const {name} = req.body
     
     try{
@@ -466,7 +466,7 @@ app.post('/registerTaluka',authenticateToken,async (req,res)=>{
 })
 
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { name, password } = req.body;
 
     if (!name || !password) {
