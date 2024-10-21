@@ -35,7 +35,7 @@ class _UserPageState extends State<UserPage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   String? selectedPollingStationId,selectedOperator;
   String? pollingStationId;
-  String? username='Null';
+  String? username= 'Null';
 
   late Future<List<String>>? cameraList;
   late Future<List<String>>? pollsList;
@@ -88,9 +88,12 @@ class _UserPageState extends State<UserPage> {
 
   Future<List<String>> fetchAssignments() async{
     String? token = await storage.read(key: 'token');
-
+    String? name = await storage.read(key: 'username');
+    setState(() {
+      username=name;
+    });
     final body = jsonEncode({
-      'operator':username
+      'operator':name
     });
 
     final url = Uri.parse('${apiKey}myCameraList');
@@ -286,10 +289,10 @@ class _UserPageState extends State<UserPage> {
 
       if (response.statusCode == 200) {
         // print('Login successful: ${response.body}');
-        final responseData = jsonDecode(response.body);
-        setState(() {
-          username= responseData['name'];
-        });
+        // final responseData = jsonDecode(response.body);
+        // setState(() {
+        //   username= responseData['name'];
+        // });
 
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');

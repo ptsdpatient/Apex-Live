@@ -48,6 +48,8 @@ class _LoginPageState extends State<LoginPage>{
 
       if (response.statusCode == 200) {
         print('Login successful: ${response.body}');
+        final responseData = jsonDecode(response.body);
+        saveName(responseData['name']);
         Navigator.pushNamed(context, '/user');
       } else {
         print('Login failed: ${response.statusCode} - ${response.body}');
