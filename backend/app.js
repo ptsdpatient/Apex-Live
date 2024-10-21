@@ -381,9 +381,10 @@ app.post('/registerPollingStation',authenticateToken,async (req,res)=>{
 
 
 app.post('/registerCamera',authenticateToken,async (req,res)=>{
-    // console.log("camera request received")
+    console.log("camera request received")
     const {number,poll_station,operator} = req.body
     if (!number || !poll_station ||!operator) {
+        console.log("reg error")
         return res.status(401).json({ message: 'Camera not registered.', done: false });
     }
 
@@ -393,7 +394,9 @@ app.post('/registerCamera',authenticateToken,async (req,res)=>{
     try{
         const operator_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[trimmed_operator])
         const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station_name = $1',[trimmed_poll_station])
-        // console.log("pol id got")
+        
+        console.log("pol id got")
+
        if (poll_id.rowCount === 0) {
         console.log(`-> Polling station "${poll_station}" not found.`);
         return res.status(404).json({ message: 'Polling station not found', done: false });
