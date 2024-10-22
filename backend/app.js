@@ -6,9 +6,18 @@ const port =  process.env.PORT;
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
 const secretKey='apex_live_auth'
+const fs = require('fs');
+const path = require('path');
+const https = require('https')
 
 let index=0
 
+
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'certificate', 'private.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'certificate', 'certificate.crt')),
+    ca: fs.readFileSync(path.join(__dirname, 'certificate', 'ca_bundle.crt')) // Optional, if you have CA bundle
+};
 
 app.use(express.json());
 app.options("*",cors());
@@ -511,6 +520,6 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-app.listen(port,'0.0.0.0', () => {
-    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttp://0.0.0.0:${port}\n\x1b[37m`);
+https.createServer(sslOptions, app).listen(port,'0.0.0.0', () => {
+    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttps://0.0.0.0:${port}\n\x1b[37m`);
 });
