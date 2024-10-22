@@ -14,7 +14,7 @@
     return localStorage.getItem('authToken')
     }
 
-    $: isMuted = !showingCamera; 
+    let frontCameraMuted=true
     let showingCamera=false
     let showCameraPS=''
     let showCameraM=''
@@ -31,7 +31,7 @@
     };
     let cameraPerSet = Number(selectedResolution.row) * Number(selectedResolution.col)
 
-    let slideDurationList=[3,12,26,60,120]
+    let slideDurationList=[3,15,60,240,3600]
 
     let selectedDuration=3
 
@@ -39,6 +39,10 @@
         {
             r:"2",
             c:"3"
+        },
+        {
+            r:"2",
+            c:"2"
         },
         {
             r:"3",
@@ -290,6 +294,7 @@ function handleResolution(resolution) {
     selectedResolution.col = resolution.c;
     cameraIndex = 0; 
     updateVisibleCameras(); 
+    changeSlide()
 }
 
 async function getInfo(){
@@ -305,11 +310,11 @@ onMount(()=>{
 
     setTimeout(() => {
         configureCameras()
-    }, 5000);
+    }, 2000);
 
     setTimeout(() => {
         playCameras()
-    }, 15000);
+    }, 5000);
 
 
     interval = setInterval(() => changeSlide(), selectedDuration*1000); 
@@ -324,21 +329,44 @@ onMount(()=>{
     <button class="{showingCamera ? 'fixed' : 'hidden'} h-full w-full bg-black bg-opacity-90 z-40" style="overflow: hidden;">
         <div class="hover:cursor-default w-full h-full relative">
             <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
-                <div class="rounded-lg group w-full relative flex-grow h-full">
-                    <div class="w-full bg-gray-900 relative text-xl overflow-hidden">
-                        <div class="camera_info text-white rounded-xl whitespace-nowrap overflow-hidden">
-                            PS: {showCameraPS}, Model: {showCameraM}, Address: {showCameraPA}
+                <div class="text-white relative bg-gray-800 flex border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg  cursor-pointer">
+                    <div class="rounded-lg relative group h-auto relative flex-grow w-full h-full overflow-hidden">
+                        
+                        <video bind:muted={frontCameraMuted} autoplay class="object-cover w-full h-full" style="object-fit: fill;" id='showCameraID'>
+                            <track kind="captions">
+                        </video>
+                    </div>
+                    <div class="w-full bg-gray-900 relative text-xl pt-1 items-center">
+                        <div class="camera_info text-white rounded-xl whitespace-nowrap inline-block items-center overflow-hidden">
+                            PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}
                         </div>
                         <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold">
-                            <div class="bg-gray-900 h-full relative">
-                                <button on:click={() => { showingCamera = false; }} class="px-3 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
+                            
+                            <div class="bg-gray-900">
+                                <button on:click={()=>{frontCameraMuted=!frontCameraMuted}} class=" transition-all duration-300  text-xl">{!frontCameraMuted?"🔊":"🔈"}</button>
+
+                                <button on:click={() => { showingCamera=false}} class="px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
                             </div>
                         </div>
                     </div>
-                    <video autoplay bind:muted={isMuted} class="h-full w-full" style="object-fit: fill;" id='showCameraID'>
-                        <track kind="captions">
-                    </video>
                 </div>
+<!-- 
+                <div class="rounded-lg group w-full relative h-full">
+                    <video autoplay bind:muted={isMuted} class="h-full w-full" style="" id='showCameraID'>
+                        <track kind="captions">
+                    </video>                    
+                </div>
+                <div class="w-full bg-gray-900 relative text-xl overflow-hidden z-60">
+                    <div class="camera_info text-white rounded-xl whitespace-nowrap overflow-hidden">
+                        PS: {showCameraPS}, Model: {showCameraM}, Address: {showCameraPA}
+                    </div>
+                    <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold">
+                        <div class="bg-gray-900 h-full relative">
+                            <button on:click={() => { showingCamera = false; }} class="px-3 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
+                        </div>
+                    </div>
+                </div>
+                 -->
             </div>
         </div>
     </button>
@@ -389,9 +417,9 @@ onMount(()=>{
         </div>
          
         <!-- ye camera ka hai -->
-        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2" style="height:86svh;">        
+        <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2 " style="height:86svh;">        
                 {#each cameraList as camera}
-                <div class="text-white relative bg-gray-800 {camera.visible ? 'flex' : 'hidden'} border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg transition-all duration-300">
+                <div class="text-white relative bg-gray-800 {camera.visible ? 'flex' : 'hidden'} border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg  cursor-pointer">
                     <div class="rounded-lg relative group h-auto relative flex-grow w-full h-full overflow-hidden">
                         <button on:click={()=>{muteThisCamera(camera)}} class="group-hover:block hidden z-20 transition-all duration-300 absolute right-0 p-3 text-4xl">{!camera.muted?"🔊":"🔈"}</button>
                         
@@ -399,11 +427,11 @@ onMount(()=>{
                             <track kind="captions">
                         </video>
                     </div>
-                    <div class="w-full bg-gray-900 relative text-base">
-                        <div class="camera_info text-white rounded-xl whitespace-nowrap overflow-hidden">
+                    <div class="w-full bg-gray-900 relative text-sm pt-1 items-center">
+                        <div class="camera_info text-white rounded-xl whitespace-nowrap inline-block items-center overflow-hidden">
                             PS : {camera.polling_id}, {camera.polling_station_name}, Model : {camera.serial_number}, Address : {camera.polling_address}
                         </div>
-                        <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-base font-bold">
+                        <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-sm font-bold">
                             <div class="bg-gray-900">
                                 <button on:click={() => { showThisCamera(camera) }} class="px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
                             </div>
@@ -421,7 +449,7 @@ onMount(()=>{
 <style>
 
     .camera_info{
-        animation: scroll_animation 30s linear infinite;
+        animation: scroll_animation 13s linear infinite;
     }
 
     @keyframes scroll_animation{

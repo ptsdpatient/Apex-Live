@@ -496,7 +496,7 @@ class _UserPageState extends State<UserPage> {
 
                                         if (match != null) {
                                           String serialNumber = match.group(1)!.trim();
-                                          String hlsUrl = 'http://117.248.105.198:8080/hls/$serialNumber.m3u8';
+                                          String hlsUrl = 'https://apex-computers.live/hls/$serialNumber.m3u8';
                                           showModalBottomSheet(
                                             context: context,
                                             builder: (BuildContext context) {
