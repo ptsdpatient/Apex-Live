@@ -14,9 +14,9 @@ let index=0
 
 
 const sslOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'certificate', 'private.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'certificate', 'certificate.crt')),
-    ca: fs.readFileSync(path.join(__dirname, 'certificate', 'ca_bundle.crt')) // Optional, if you have CA bundle
+    key: fs.readFileSync('/home/apex_live/Apex-Live/certificate/private.key'),
+    cert: fs.readFileSync('/home/apex_live/Apex-Live/certificate/certificate.crt'),
+    ca: fs.readFileSync('/home/apex_live/Apex-Live/certificate/ca_bundle.crt') // Optional, if you have CA bundle
 };
 
 app.use(express.json());
