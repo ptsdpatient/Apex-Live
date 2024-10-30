@@ -449,7 +449,7 @@ onMount(()=>{
 <style>
 
     .camera_info{
-        animation: scroll_animation 13s linear infinite;
+        animation: scroll_animation 30s linear infinite;
     }
 
     @keyframes scroll_animation{
@@ -457,7 +457,7 @@ onMount(()=>{
             transform:translate(20%);
         }
         100%{
-            transform:translate(-150%);
+            transform:translate(-100%);
         }
     }
 </style>

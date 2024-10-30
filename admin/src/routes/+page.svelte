@@ -1,8 +1,8 @@
 <script>
     import { onMount } from 'svelte';
-    let port=import.meta.env.VITE_PORT;
-    let link=import.meta.env.VITE_URL
-    let url = `http://${link}:${port}`;
+    let port=2000
+    let link='apex-computers.live'
+    let url = `https://${link}/api`;
 
     async function authenticateToken() {
         const token = localStorage.getItem('authToken'); 
