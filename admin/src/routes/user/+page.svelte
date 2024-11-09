@@ -29,6 +29,7 @@
     let editCameraSerialNumber=''
     let editCameraPollingStation=''
     let editCameraOperator=''
+    let editCameraInside=false
 
 
     let editEmployeeName=''
@@ -39,6 +40,7 @@
     let editPollingStationAddress=''
     let editPollingStationConstituency=''
     let editPollingStationSupervisor=''
+    let editPollingStationNumber=0
 
     let editTalukaName=''
 
@@ -46,6 +48,7 @@
     let pollingStationsupervisor=''
     let pollingStationAddress=''
     let pollingStationconstituency=''
+    let pollingStationNumber=0
 
 
     let employeeList=[]
@@ -57,14 +60,15 @@
     let cameraPollStation=''
     let cameraOperator=''
     let serialNumber = '';
-
+    let cameraInside = false
     let employeeName=''
     let employeePassword=''
     let employeeNumber=''
     let employeeAdmin=false
 
     // let url='http://117.248.105.198:2000'
-    let url ='https://apex-computers.live/api'
+    // let url ='https://apex-computers.live/api'
+    let url='http://localhost:2000/api'
 
     let token
 
@@ -122,6 +126,7 @@
           
 
            pollingStationList = await response.json();
+           pollingStationNumber = pollingStationList.length+1
        } catch (error) {
            console.error('Error fetching employees:', error);
            errorMessage = 'An error occurred while fetching employees.';
@@ -251,6 +256,7 @@
                 },
                 body: JSON.stringify({ 
                         name:pollingStationName,
+                        pid:pollingStationNumber,
                         supervisor:pollingStationsupervisor,
                         address:pollingStationAddress,
                         constituency:pollingStationconstituency
@@ -311,7 +317,7 @@
 
 
     async function registerCamera() {
-        if (serialNumber=='' || cameraPollStation=='') {
+        if (!serialNumber || !cameraPollStation) {
             alert("Please enter all information regarding camera");
             return;
         }
@@ -326,7 +332,8 @@
                 body: JSON.stringify({ 
                     number: serialNumber,
                     poll_station: cameraPollStation,    
-                    operator:cameraOperator
+                    operator:cameraOperator,
+                    category:cameraInside
                 }) 
             });
 
@@ -364,7 +371,12 @@
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name: employeeName,password: employeePassword,number: employeeNumber,isAdmin:employeeAdmin}) // Assuming 'email' is used as username in the backend
+                body: JSON.stringify({ 
+                    name: employeeName,
+                    password: employeePassword,
+                    number: employeeNumber,
+                    isAdmin:employeeAdmin
+                }) // Assuming 'email' is used as username in the backend
             });
 
             const data = await response.json();
@@ -430,12 +442,13 @@
 
     async function saveChanges() {
         if(!isAdmin)return
-        let info1='',info2='',info3='',info4='',infoTable=''
+        let info1='',info2='',info3='',info4='',info5='',infoTable=''
         switch(editItem){
             case 0:{
                 info1=editCameraPollingStation
                 info2=editCameraSerialNumber
                 info3=editCameraOperator
+                info4=editCameraInside
                 infoTable='cameras'
             }break;
             case 1:{
@@ -450,6 +463,7 @@
                 info2=editPollingStationAddress
                 info3=editPollingStationConstituency
                 info4=editPollingStationSupervisor
+                info5=editPollingStationNumber
                 infoTable='polling_stations'
             }break;
             case 3:{
@@ -478,6 +492,7 @@
                      info2: info2,
                      info3: info3,
                      info4: info4,
+                     info5: info5,
                      table:infoTable,
                      reference: editReference
                     }) 
@@ -525,11 +540,12 @@
                         
                         infoTable='polling_stations'
                     }break;
-                    case 3:{
-                       
+                    case 3:{                       
                         infoTable='taluka'
                     }break;
-
+                    case 4:{                       
+                        infoTable='constituencies'
+                    }break;
                 }
 
 
@@ -584,6 +600,7 @@
         editCameraSerialNumber=camera.serial_number
         editCameraPollingStation=camera.polling_station_name
         editCameraOperator=camera.operator_name
+        editCameraInside=camera.category
         editItem=0;
         editReference=camera.camera_id
     }
@@ -608,6 +625,7 @@
         editPollingStationAddress=station.polling_address
         editPollingStationConstituency=station.ac_name
         editPollingStationSupervisor=station.supervisor_name
+        editPollingStationNumber=station.pid
         editItem=2;
         editReference=station.polling_station_id
     }
@@ -619,17 +637,18 @@
 
         const dataToDownload = visibleCameras.map((camera,index) => ({
             "Sr.No" : (index+1),
+            "State" : "Maharashtra",
             "District Name" : "Chandrapur",
             "AC Number" : camera.ac_number,
             "AC Name" : camera.ac_name,
-            "PS Number": camera.polling_id,
-            "PS Name and Address": camera.polling_station_name,
-            "Location" : camera.polling_address,            
+            "PS Number": camera.polling_id+'-'+camera.category,
+            "PS Name and Address": camera.polling_station_name+', '+camera.polling_address,    
+            "Camera Category" : camera.category,
             "Streaming ID": camera.serial_number,
             "AC Supervisor Name": camera.supervisor_name,
             "AC Supervisor No" : camera.supervisor_phone,          
             "Operator Name": camera.operator_name,
-            "Operator No" : camera.operator_phone,            
+            "Operator No" : camera.operator_phone            
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(dataToDownload);
@@ -705,6 +724,12 @@
                     </option>
                 {/each}
             </select>
+
+
+            <div class="flex flex-row items-center ml-20  my-7 gap-5">
+                <div>Camera is placed inside?</div> 
+                <input class="accent-blue-500 transform scale-[2]" bind:checked={editCameraInside} type="checkbox">
+            </div>
 
             <div class="ml-10 mt-5 my-2">Serial Number :</div>
             <input bind:value={editCameraSerialNumber} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Serial Number">
@@ -788,7 +813,11 @@
         <div style="max-height:70vh;" class="flex overflow-y-auto flex-col mx-auto w-2/3 gap-3 text-2xl my-10 bg-gray-300 rounded-xl">
             
             <div class="ml-10 mt-5 my-2">Polling Station :</div>
-            <input bind:value={editPollingStationName} class="border-gray-500 border-1 ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Employee Name">
+            <div class="ml-7 w-3/4 gap-3 flex flex-row items-center">
+                <input bind:value={editPollingStationName} class="w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station Name">
+                <input bind:value={editPollingStationNumber} class="w-1/4 px-3 py-2 rounded-xl" placeholder="Number" type="number">
+            </div>
+            
             <div class="ml-10 mt-5 my-2">Polling Station Address :</div>
             <input bind:value={editPollingStationAddress} class="border-gray-500 border-1  ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Mobile Number">
             
@@ -915,10 +944,11 @@
                                 <tr class="bg-gray-800 text-white text-left">
 
                                     <th class="py-2 px-4">Sr.no</th>
-                                    <th class="py-2 px-4">CID</th>
                                     <th class="py-2 px-4">Serial Number</th>
                                     <th class="py-2 px-4">PID</th>
                                     <th class="py-2 px-4">Polling Station</th>
+                                    <th class="py-2 px-4">category</th>
+                                    
                                     <th class="py-2 px-4">AC</th>
                                     <th class="py-2 px-4">supervisor</th>
                                     <th class="py-2 px-4">supervisor Phone</th>
@@ -931,10 +961,11 @@
                                 {#each cameraList as camera, camera_index (camera.camera_id)}
                                     <tr on:click={() => { if (isAdmin) openCamera(camera) }} class="hover:cursor-pointer {camera.visible?"":"hidden"} border-b border-gray-200 hover:bg-gray-100">
                                         <td class="py-2 px-4">{camera_index+1}</td>
-                                        <td class="py-2 px-4">{camera.camera_id}</td>
                                         <td class="py-2 px-4">{camera.serial_number}</td>
                                         <td class="py-2 px-4">{camera.polling_id}</td>
                                         <td class="py-2 px-4">{camera.polling_station_name}</td>
+
+                                        <td class="py-2 px-4">{camera.category}</td>
                                         <td class="py-2 px-4">{camera.ac_name}</td>
 
                                         <td class="py-2 px-4">{camera.supervisor_name}</td>
@@ -978,7 +1009,12 @@
                                 {/each}
                             </select>
 
-                            <div class="ml-10 mt-5 my-2">Serial Number :</div>
+                            <div class="flex flex-row items-center ml-20  my-7 gap-5">
+                                <div>Camera is placed inside?</div> 
+                                <input class="accent-blue-500 transform scale-[2]" bind:checked={cameraInside} type="checkbox">
+                            </div>
+                            
+                            <div class="ml-10 mb-2">Serial Number :</div>
                             <input
                             bind:value={serialNumber} 
                             on:keydown={(event) => {
@@ -1014,9 +1050,12 @@
                         <div class="bg-gray-300 flex flex-col p-3 rounded-3xl justify-center">
                         
                             <div class="mx-auto mt-5 mb-5 text-4xl ">Register Polling Station</div>
-
+                            
                             <div class="ml-10 mt-5 my-2">Polling Station :</div>
-                            <input bind:value={pollingStationName} class="ml-7 w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station">
+                            <div class="ml-7 w-3/4 gap-3 flex flex-row items-center">
+                                <input bind:value={pollingStationName} class="w-3/4 px-3 py-2 rounded-xl" placeholder="Polling Station Name">
+                                <input bind:value={pollingStationNumber} class="w-1/4 px-3 py-2 rounded-xl" placeholder="Number" type="number">
+                            </div>
                             <div class="ml-10 my-2">Supervisor :</div>
                             <select bind:value={pollingStationsupervisor} class="ml-7 w-3/4 px-3 py-2 rounded-xl">
                                 {#each employeeList as employee}

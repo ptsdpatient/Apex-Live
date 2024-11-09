@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte';
     // let url = 'http://117.248.105.198:2000';
-    let url ='https://apex-computers.live/api'
+    // let url ='https://apex-computers.live/api'
+    let url='http://localhost:2000/api'
 
     let username = '';
     let password = '';

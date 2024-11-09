@@ -13,11 +13,11 @@ const https = require('https')
 let index=0
 
 
-const sslOptions = {
-    key: fs.readFileSync('/home/apex_live/Apex-Live/certificate/private.key'),
-    cert: fs.readFileSync('/home/apex_live/Apex-Live/certificate/certificate.crt'),
-    ca: fs.readFileSync('/home/apex_live/Apex-Live/certificate/ca_bundle.crt') // Optional, if you have CA bundle
-};
+// const sslOptions = {
+//     key: fs.readFileSync('/home/apex_live/Apex-Live/certificate/private.key'),
+//     cert: fs.readFileSync('/home/apex_live/Apex-Live/certificate/certificate.crt'),
+//     ca: fs.readFileSync('/home/apex_live/Apex-Live/certificate/ca_bundle.crt') // Optional, if you have CA bundle
+// };
 
 app.use(express.json());
 app.options("*",cors());
@@ -54,41 +54,55 @@ app.get('/api/authenticateToken', authenticateToken, (req, res) => {
     });
 });
 
-async function alterTableQuery(table, info1, info2, info3, info4, reference) {
+async function alterTableQuery(table, info1, info2, info3, info4,info5, reference) {
     switch (table) {
         case 'cameras': {
-            console.log(`${info1}`);
+
+            const existingSerial = await pool.query(
+                'SELECT id FROM cameras WHERE serial_number = $1',
+                [info1]
+            );
+            
+            if (existingSerial.rows.length > 0) {
+                return { query:'SELECT 1;', params: [] };
+
+            }
+
+            const trimmed_operator=info3.trim()
             const trimmed_poll_station = info1.trim();
             
+            const operator_id_result = await pool.query(
+                'SELECT id FROM employees WHERE full_name = $1',
+                [trimmed_operator]
+            )
+
             const poll_id_result = await pool.query(
-                'SELECT id FROM polling_stations WHERE polling_station = $1',
+                'SELECT id FROM polling_stations WHERE polling_station_name = $1',
                 [trimmed_poll_station]
             );
 
-            if (poll_id_result.rows.length === 0) {
+            if (poll_id_result.rows.length === 0 || operator_id_result.rows.length===0) {
                 throw new Error(`No polling station found for ${info1}`);
             }
 
-            const poll_id = poll_id_result.rows[0].id;
-            console.log('Polling station ID:', poll_id);
-
+           
             const query = `
                 UPDATE ${table}
-                SET serial_number = $1, PS = $2
-                WHERE id = $3
+                SET serial_number = $1,operator =$2, PS = $3,category = $4
+                WHERE id = $5
             `;
 
-            return { query, params: [info1, poll_id, reference] };
+            return { query, params: [info1,operator_id_result.rows[0].id, poll_id_result.rows[0].id,info4, reference] };
         };
         case 'polling_stations': {
 
             console.log(`${info1}`);
-            const trimmed_taluka = info3.trim();
+            const trimmed_constituency = info3.trim();
             const trimmed_supervisor=info4.trim();
 
-            const taluka_id = await pool.query(
-                'SELECT id FROM taluka WHERE taluka = $1',
-                [trimmed_taluka]
+            const constituency_id = await pool.query(
+                'SELECT id FROM constituencies WHERE ac_name = $1',
+                [trimmed_constituency]
             );
             
             const supervisor_id = await pool.query(
@@ -96,18 +110,18 @@ async function alterTableQuery(table, info1, info2, info3, info4, reference) {
                 [trimmed_supervisor]
             )
 
-            if (taluka_id.rows.length === 0 || supervisor_id.rows.length === 0) {
+            if (constituency_id.rows.length === 0 || supervisor_id.rows.length === 0) {
                 throw new Error(`No polling station found for ${info3} or ${info4}`);
             }
 
             
             const query = `
                 UPDATE ${table}
-                SET polling_station = $1, polling_address = $2, taluka = $3, supervisor=$4 
-                WHERE id = $5
+                SET polling_station_name = $1, polling_address = $2, supervisor=$3, pid=$4,constituency=$5 
+                WHERE id = $6
             `;
 
-            return { query, params: [info1,info2 ,taluka_id.rows[0].id , supervisor_id.rows[0].id, reference] };
+            return { query, params: [info1,info2, supervisor_id.rows[0].id,info5,constituency_id.rows[0].id, reference] };
         }
         case 'employees': {
          
@@ -144,12 +158,11 @@ async function alterTableQuery(table, info1, info2, info3, info4, reference) {
 }
 
 app.post('/api/editItem', authenticateToken, async (req, res) => {
-    const { info1, info2, info3, info4, reference, table } = req.body;
+    const { info1, info2, info3, info4, info5, reference, table } = req.body;
 
     try {
         // Get the query and parameters
-        const { query, params } = await alterTableQuery(table, info1, info2, info3, info4, reference);
-
+        const { query, params } = await alterTableQuery(table, info1, info2, info3, info4,info5, reference);
 
         // Execute the query
         const { rows } = await pool.query(query, params);
@@ -165,6 +178,8 @@ app.post('/api/editItem', authenticateToken, async (req, res) => {
 
 app.post('/api/deleteItem',authenticateToken,async (req,res)=>{
     const {table,reference} =req.body
+    console.log('table is : '+table+' reference is : '+reference)
+
     try{
         const query=`
             DELETE FROM ${table}
@@ -181,7 +196,8 @@ app.post('/api/deleteItem',authenticateToken,async (req,res)=>{
 
 
 
-app.get('/api/getEmployees',authenticateToken,async (req,res)=>{
+app.get('/api/getEmployees',async (req,res)=>{
+    // console.log('getting emps')
     try{
         const { rows } = await pool.query('SELECT id, full_name, is_admin,phone_number FROM employees');
         res.status(200).json(rows);
@@ -206,10 +222,11 @@ app.get('/api/getCameras',authenticateToken,async (req,res)=>{
         const query = `        
             SELECT 
                 cameras.id AS "camera_id",
+                cameras.category AS "category",
                 cameras.serial_number AS "serial_number",
                 polling_stations.polling_station_name AS "polling_station_name",
                 polling_stations.polling_address AS "polling_address",
-                polling_stations.id AS "polling_id",
+                polling_stations.pid AS "polling_id",
                 employees.full_name AS "supervisor_name",
                 employees.phone_number AS "supervisor_phone",
                 operator_employee.full_name AS "operator_name",  
@@ -270,7 +287,7 @@ app.post('/api/myCameraList', authenticateToken, async (req, res) => {
                 cameras.serial_number AS "serial_number",
                 polling_stations.polling_station_name AS "polling_station_name",
                 polling_stations.polling_address AS "polling_address",
-                polling_stations.id AS "polling_id",
+                polling_stations.pid AS "polling_id",
                 supervisor_employee.full_name AS "supervisor_name",
                 supervisor_employee.phone_number AS "supervisor_phone",
                 operator_employee.full_name AS "operator_name",
@@ -303,6 +320,7 @@ app.get('/api/getPollingStation',authenticateToken,async (req,res)=>{
         const query = `         
                         SELECT
                         ps.id AS polling_station_id,
+                        ps.pid AS pid,
                         ps.polling_station_name,
                         ps.polling_address,
                         t.taluka AS taluka_name,
@@ -372,15 +390,15 @@ app.post('/api/registerConstituency',authenticateToken,async (req,res)=>{
 })
 
 app.post('/api/registerPollingStation',authenticateToken,async (req,res)=>{
-    const {name,supervisor,address,constituency} = req.body
+    const {name,supervisor,address,constituency,pid} = req.body
     try{
 
         const supervisor_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[supervisor])
         const constituency_id = await pool.query('SELECT id FROM constituencies WHERE ac_name = $1',[constituency])
        
         const result = await pool.query(
-            'INSERT INTO polling_stations (polling_station_name, polling_address, constituency, supervisor) VALUES ($1, $2, $3, $4) RETURNING polling_station_name',
-            [name,address,constituency_id.rows[0].id,supervisor_id.rows[0].id]
+            'INSERT INTO polling_stations (polling_station_name, pid, polling_address, constituency, supervisor) VALUES ($1, $2, $3, $4,$5) RETURNING polling_station_name',
+            [name, pid,address ,constituency_id.rows[0].id,supervisor_id.rows[0].id]
         );
 
         const PS_address = result.rows[0].polling_station_name;
@@ -394,22 +412,22 @@ app.post('/api/registerPollingStation',authenticateToken,async (req,res)=>{
 })
 
 
-app.post('/api/registerCamera',authenticateToken,async (req,res)=>{
-    console.log("camera request received")
-    const {number,poll_station,operator} = req.body
-    if (!number || !poll_station ||!operator) {
-        console.log("reg error")
-        return res.status(401).json({ message: 'Camera not registered.', done: false });
-    }
+app.post('/api/registerCamera',async (req,res)=>{
+    // console.log("camera request received")
+    const {number,poll_station,operator,category} = req.body
+    // if (!number || !poll_station ||!operator) {
+    //     console.log("reg error")
+    //     return res.status(401).json({ message: 'Camera not registered.', done: false });
+    // }
 
     const trimmed_poll_station = poll_station.trim(); 
     const trimmed_operator= operator.trim()
-
+    // console.log(trimmed_poll_station,trimmed_operator)
     try{
         const operator_id = await pool.query('SELECT id FROM employees WHERE full_name = $1',[trimmed_operator])
         const poll_id = await pool.query('SELECT id FROM polling_stations WHERE polling_station_name = $1',[trimmed_poll_station])
         
-        console.log("pol id got")
+        // console.log("pol id got")
 
        if (poll_id.rowCount === 0) {
         console.log(`-> Polling station "${poll_station}" not found.`);
@@ -417,8 +435,8 @@ app.post('/api/registerCamera',authenticateToken,async (req,res)=>{
         }
 
         const result = await pool.query(
-            `INSERT INTO cameras (serial_number, PS,operator, is_active) VALUES ($1, $2, $3,$4) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
-            [number,poll_id.rows[0].id,operator_id.rows[0].id ,false]
+            `INSERT INTO cameras (serial_number, PS ,operator, is_active, category) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
+            [number,poll_id.rows[0].id,operator_id.rows[0].id ,false,category?"IN":"OUT"]
         );
         if(result.rows.length > 0){
             const serial_number = result.rows[0].serial_number;
@@ -520,6 +538,10 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-https.createServer(sslOptions, app).listen(port,'0.0.0.0', () => {
-    console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttps://0.0.0.0:${port}\n\x1b[37m`);
-});
+// https.createServer(sslOptions, app).listen(port,'0.0.0.0', () => {
+//     console.log(`\n\n\t\t\x1b[37m[+] Apex Live admin server has started on \x1b[36mhttps://0.0.0.0:${port}\n\x1b[37m`);
+// });
+
+app.listen(2000,()=>{
+    console.log('server started')
+})

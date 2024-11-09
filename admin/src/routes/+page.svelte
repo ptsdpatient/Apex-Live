@@ -1,8 +1,11 @@
 <script>
     import { onMount } from 'svelte';
     let port=2000
-    let link='apex-computers.live'
-    let url = `https://${link}/api`;
+    // let link='apex-computers.live'
+    let link='localhost:2000'
+
+    let url=`http://${link}/api`
+    // let url = `https://${link}/api`;
 
     async function authenticateToken() {
         const token = localStorage.getItem('authToken'); 

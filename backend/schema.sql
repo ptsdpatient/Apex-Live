@@ -29,6 +29,7 @@ CREATE TABLE employees(
 CREATE TABLE polling_stations(
     id SERIAL PRIMARY KEY,
     constituency INTEGER,
+    pid VARCHAR,
     polling_station_name TEXT,
     polling_address TEXT,
     supervisor INTEGER,
@@ -39,7 +40,8 @@ CREATE TABLE polling_stations(
 CREATE TABLE cameras (
     id SERIAL PRIMARY KEY,
     operator INTEGER,
-    PS INTEGER ,
+    PS INTEGER,
+    category VARCHAR,
     FOREIGN KEY (PS) REFERENCES polling_stations(id) ON DELETE SET NULL,
     serial_number TEXT UNIQUE,
     sent_at TEXT,

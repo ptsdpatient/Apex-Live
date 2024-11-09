@@ -7,6 +7,8 @@
     // let apiUrl='117.248.105.98'
     let apiUrl='apex-computers.live'
     let url=`https://${apiUrl}/api`
+    let debugURL='http://localhost:2000/api'
+
     let token
     let interval
     let ip=apiUrl
@@ -16,11 +18,14 @@
 
     let frontCameraMuted=true
     let showingCamera=false
-    let showCameraPS=''
-    let showCameraM=''
+    
+    let showCameraAC=''
+    let showCameraSN=''
+    let showCameraPA=''
+
+
     let selectedConstituency='All'
     let selectedPollingStation='All'
-    let showCameraPA=''
     let cameraList=[]
     let constituencyList=[]
     let pollingStationList=[]
@@ -39,6 +44,9 @@
         {
             r:"2",
             c:"3"
+        },{
+            r:'1',
+            c:'1'
         },
         {
             r:"2",
@@ -61,9 +69,9 @@
 
     function showThisCamera(camera){
         showingCamera=true
-        showCameraPS=camera.polling_station_name
-        showCameraM=camera.serial_number
-        showCameraPA=camera.polling_address
+        showCameraAC=camera.ac_number+' '+camera.ac_name
+        showCameraSN=camera.serial_number
+        showCameraPA=camera.polling_id+' '+camera.polling_address
         const video = document.getElementById(`showCameraID`);
         if (!video) {
             console.error(`Video element not found for serial number: ${serialNumber}`);
@@ -97,7 +105,7 @@
         }
      
         try {
-            const response = await fetch(`${url}/authenticateToken`, {
+            const response = await fetch(`${debugURL}/authenticateToken`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`, 
@@ -128,7 +136,7 @@
    async function fetchCameras() {
        
        try {
-           const response = await fetch(`${url}/getCameras`, {
+           const response = await fetch(`${debugURL}/getCameras`, {
                method: 'GET',
                headers: {
                    'Authorization': `Bearer ${token}`,
@@ -148,7 +156,7 @@
    async function fetchPolls() {
        
        try {
-           const response = await fetch(`${url}/getPollingStation`, {
+           const response = await fetch(`${debugURL}/getPollingStation`, {
                method: 'GET',
                headers: {
                    'Authorization': `Bearer ${token}`,
@@ -166,7 +174,7 @@
    async function fetchConstituency() {
        
        try {
-           const response = await fetch(`${url}/getConstituencies`, {
+           const response = await fetch(`${debugURL}/getConstituencies`, {
                method: 'GET',
                headers: {
                    'Authorization': `Bearer ${token}`,
@@ -329,16 +337,16 @@ onMount(()=>{
     <button class="{showingCamera ? 'fixed' : 'hidden'} h-full w-full bg-black bg-opacity-90 z-40" style="overflow: hidden;">
         <div class="hover:cursor-default w-full h-full relative">
             <div class="absolute h-full w-full flex flex-col justify-end top-0 left-0">
-                <div class="text-white relative bg-gray-800 flex border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg  cursor-pointer">
-                    <div class="rounded-lg relative group h-auto relative flex-grow w-full h-full overflow-hidden">
+                <div class="text-white relative bg-gray-800 flex border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left cursor-pointer">
+                    <div class="relative group h-auto relative flex-grow w-full h-full overflow-hidden">
                         
                         <video bind:muted={frontCameraMuted} autoplay class="object-cover w-full h-full" style="object-fit: fill;" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
                     <div class="w-full bg-gray-900 relative text-xl pt-1 items-center">
-                        <div class="camera_info text-white rounded-xl whitespace-nowrap inline-block items-center overflow-hidden">
-                            PS : {showCameraPS}, Model : {showCameraM}, Address : {showCameraPA}
+                        <div class="camera_info text-white rounded-xl whitespace-nowrap inline-block items-center overflow-hidden">     
+                            AC : {showCameraAC}, Camera : {showCameraSN}, PS : {showCameraPA}
                         </div>
                         <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold">
                             
@@ -394,7 +402,7 @@ onMount(()=>{
                     <select bind:value={selectedPollingStation} class="rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer px-5 py-1" on:change="{(e) => {cameraIndex=0;updateVisibleCameras();}}">
                         <option value="All">All</option>
                         {#each pollingStationList as polling_station}
-                            <option value={polling_station.polling_station_name}>PID : {polling_station.polling_station_id}. {polling_station.polling_station_name}</option>
+                            <option value={polling_station.polling_station_name}>PS : {polling_station.polling_station_id} {polling_station.polling_station_name}</option>
                         {/each}
                     </select>
                 </div>
@@ -420,7 +428,7 @@ onMount(()=>{
         <div class="w-full relative transition-all duration-300 grid grid-rows-{selectedResolution.row} grid-cols-{selectedResolution.col} px-3 pb-3 jusify-around  gap-2 " style="height:86svh;">        
                 {#each cameraList as camera}
                 <div class="text-white relative bg-gray-800 {camera.visible ? 'flex' : 'hidden'} border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left rounded-lg  cursor-pointer">
-                    <div class="rounded-lg relative group h-auto relative flex-grow w-full h-full overflow-hidden">
+                    <div class=" relative group h-auto relative flex-grow w-full h-full overflow-hidden">
                         <button on:click={()=>{muteThisCamera(camera)}} class="group-hover:block hidden z-20 transition-all duration-300 absolute right-0 p-3 text-4xl">{!camera.muted?"🔊":"🔈"}</button>
                         
                         <video autoplay class="object-cover w-full h-full" style="object-fit: fill;" bind:muted={camera.muted} id='{camera.serial_number}'>
@@ -429,7 +437,7 @@ onMount(()=>{
                     </div>
                     <div class="w-full bg-gray-900 relative text-sm pt-1 items-center">
                         <div class="camera_info text-white rounded-xl whitespace-nowrap inline-block items-center overflow-hidden">
-                            PS : {camera.polling_id}, {camera.polling_station_name}, Model : {camera.serial_number}, Address : {camera.polling_address}
+                           AC : {camera.ac_number+' '+camera.ac_name}, Camera : {camera.serial_number} , PS : {camera.polling_id+' '+camera.polling_address}
                         </div>
                         <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-sm font-bold">
                             <div class="bg-gray-900">

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.apex.app"
+    namespace = "com.apex_computers.live"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
