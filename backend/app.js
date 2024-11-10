@@ -92,7 +92,7 @@ async function alterTableQuery(table, info1, info2, info3, info4,info5, referenc
                 WHERE id = $5
             `;
 
-            return { query, params: [info1,operator_id_result.rows[0].id, poll_id_result.rows[0].id,info4, reference] };
+            return { query, params: [info1,operator_id_result.rows[0].id, poll_id_result.rows[0].id,info4?"IN":"OUT", reference] };
         };
         case 'polling_stations': {
 
@@ -436,7 +436,7 @@ app.post('/api/registerCamera',async (req,res)=>{
 
         const result = await pool.query(
             `INSERT INTO cameras (serial_number, PS ,operator, is_active, category) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (serial_number) DO NOTHING RETURNING serial_number`,
-            [number,poll_id.rows[0].id,operator_id.rows[0].id ,false,category?"IN":"OUT"]
+            [number,poll_id.rows[0].id,operator_id.rows[0].id ,0,category?"IN":"OUT"]
         );
         if(result.rows.length > 0){
             const serial_number = result.rows[0].serial_number;

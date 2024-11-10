@@ -6,8 +6,10 @@
     let port = 8080
     // let apiUrl='117.248.105.98'
     let apiUrl='apex-computers.live'
+    let zoomScale=1
     let url=`https://${apiUrl}/api`
-    let debugURL='http://localhost:2000/api'
+    // let debugURL='http://localhost:2000/api'
+    let debugURL = `https://${apiUrl}/api`
 
     let token
     let interval
@@ -340,7 +342,7 @@ onMount(()=>{
                 <div class="text-white relative bg-gray-800 flex border-2 border-gray-700 flex-col text-left whitespace-nowrap overflow-hidden w-full text-ellipse justify-end items-left cursor-pointer">
                     <div class="relative group h-auto relative flex-grow w-full h-full overflow-hidden">
                         
-                        <video bind:muted={frontCameraMuted} autoplay class="object-cover w-full h-full" style="object-fit: fill;" id='showCameraID'>
+                        <video bind:muted={frontCameraMuted} autoplay class="object-cover w-full h-full" style="object-fit: fill;transform:scale({zoomScale})" id='showCameraID'>
                             <track kind="captions">
                         </video>
                     </div>
@@ -351,6 +353,11 @@ onMount(()=>{
                         <div class="w-full h-full items-center absolute top-0 left-0 flex flex-row justify-end text-xl font-bold">
                             
                             <div class="bg-gray-900">
+                                <button on:click={()=>{if(zoomScale>1)zoomScale-=0.25}} class="px-2 transition-all duration-300 transform  text-xl">-</button>
+
+                                <button on:click={()=>{if(zoomScale<10.25)zoomScale+=0.25}} class="px-2 transition-all duration-300 transform  text-xl">+</button>
+
+
                                 <button on:click={()=>{frontCameraMuted=!frontCameraMuted}} class=" transition-all duration-300  text-xl">{!frontCameraMuted?"🔊":"🔈"}</button>
 
                                 <button on:click={() => { showingCamera=false}} class="px-2 transform hover:scale-110 hover:text-white text-gray-200 transition-all duration-300 h-full">⛶</button>
