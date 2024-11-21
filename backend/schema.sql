@@ -21,8 +21,6 @@ CREATE TABLE constituencies(
 CREATE TABLE employees(
     id SERIAL PRIMARY KEY,
     full_name TEXT,
-    pass TEXT,
-    is_admin INTEGER,
     phone_number TEXT
 );
 
@@ -42,18 +40,29 @@ CREATE TABLE cameras (
     operator INTEGER,
     PS INTEGER,
     category VARCHAR,
+    created_at TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (PS) REFERENCES polling_stations(id) ON DELETE SET NULL,
     serial_number TEXT UNIQUE,
     sent_at TEXT,
+    is_online INTEGER,
     removed_at TEXT,
     is_active BOOLEAN,
     FOREIGN KEY (operator) REFERENCES employees(id)
 );
 
-CREATE TABLE streams(
+CREATE TABLE statistics(
     id SERIAL PRIMARY KEY,
-    camera INTEGER,
-    FOREIGN KEY(camera) REFERENCES cameras(id),
-    start_time TEXT,
-    end_time TEXT
+    status_total INTEGER,
+    status_online INTEGER,
+    status_offline INTEGER,  
+    log_time VARCHAR(25)
+);
+
+CREATE TABLE visible(
+    id SERIAL PRIMARY KEY,
+    ps_only INTEGER,
+    ps INTEGER,
+    FOREIGN KEY (ps_only) REFERENCES  polling_stations(id),
+    taluka INTEGER,
+    FOREIGN KEY (taluka) REFERENCES  taluka(id)
 );

@@ -1,10 +1,8 @@
 
 
-<head>
-    <title>Help Page?</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100 flex flex-row items-center justify-center min-h-screen p-4" style="width:100vw;height:100svh;">
+<title>Help Page?</title>
+    
+<div class="bg-gray-100 p-5 flex flex-row items-center justify-center" style="width:100vw;height:100svh;">
     
     <div class="w-2/3 h-full  ">
         <img class="w-full h-full" src="help.svg" alt="help">
@@ -45,5 +43,6 @@
     </div>
    
 
-</body>
+    </div>
+</div>
 

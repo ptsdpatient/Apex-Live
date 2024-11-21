@@ -3,8 +3,8 @@
     let username = '';
     let password = '';
     // let url='http://117.248.105.198:2000'
-    let url='https://apex-computers.live/api'
-    // let url='http://localhost:2000/api'
+    // let url='https://apex-computers.live/api'
+    let url='http://localhost:2000/api'
 
     async function loginUser() {
         if (!username || !password) {
@@ -47,16 +47,14 @@
 
 </script>
 
-<head>
-    <title>Login Page</title>
-</head>
+<title>Login Page</title>
 
-<body class="w-full h-full  flex flex-row items-center justify-center px-10 gap-10  bg-gray-200" style="width:100vw;height:100vh;">
+<div class="w-full h-full  flex flex-row items-center justify-center gap-10  bg-gray-200" style="width:100vw;height:100svh;background-image:url(login.jpg);background-repeat:no-repeat;background-size:cover;background-position:center;">
 
-    <div class="w-2/3 p-10 h-full flex flex-col justify-center">
+    <div class="w-2/3 p-20 h-full flex flex-col justify-center">
         <img src="camera.png" alt="camera" class="w-4/5 shadow-xl rounded-3xl mx-right">
     </div>
-    <div class=" w-1/3 p-8 space-y-6 bg-gray-100 rounded-lg text-black shadow-xl">
+    <div class=" w-1/3 p-8 m-5 space-y-6 bg-gray-200 rounded-xl bg-opacity-90 backdrop-blur-xs text-black shadow-xl">
         <h2 class="text-2xl font-bold text-center">Apex Live</h2>
 
         <form class="space-y-4">
@@ -75,8 +73,8 @@
 
         <p class="text-center text-sm text-gray-600">
             
-            <a href="/help" class="font-medium text-blue-600 hover:text-blue-500">Help Desktop</a>
+            <a href="/help" class="font-medium text-blue-600 hover:text-blue-500">Need Help?</a>
         </p>
     </div>
 
-</body>
+</div>

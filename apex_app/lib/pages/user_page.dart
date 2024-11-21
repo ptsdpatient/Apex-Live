@@ -14,7 +14,9 @@ import '../token.dart';
 import '../utilities/button.dart';
 import '../utilities/input.dart';
 import '../utilities/methods.dart';
+// import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:http/http.dart' as http;
+
 
 
 
@@ -39,13 +41,15 @@ class _UserPageState extends State<UserPage> {
   String? pollingStationId;
   String? username= 'Null';
 
+  // late VlcPlayerController _vlcPlayerController;
+
   late Future<List<String>>? cameraList;
   late Future<List<String>>? pollsList;
   late Future<List<String>>? assignmentList;
 
   late List<String> cameraData=[],pollsData=[],assignmentData=[];
   late List<String> filteredCameraList=[],filteredPollsList=[];
-
+  List<String> officeCameras=['51087','51075','13720'];
   List<String> pollingStationIdList=['Select polling station',''],operatorList=['Select Operator'];
 
 
@@ -55,6 +59,13 @@ class _UserPageState extends State<UserPage> {
   // String apiKey="http://117.248.105.198:2000/api/";
 
   String apiKey="https://apex-computers.live/api/";
+  // String apiKey="http://192.168.1.15:2000/api/";
+
+  void setCameraStream(String id){
+    setState(() {
+
+    });
+  }
 
   void showNotification(String message){
     CherryToast.success(
@@ -66,7 +77,7 @@ class _UserPageState extends State<UserPage> {
         animationCurve: Curves.easeInOutCirc,
         toastDuration: Duration(milliseconds: 1750),
 
-        toastPosition: Position.top,
+        // toastPosition: Position.top,
         description: Text(message,style: TextStyle(color:Colors.black),),
 
         title:  Text("Success!",
@@ -386,6 +397,7 @@ class _UserPageState extends State<UserPage> {
     // TODO: implement initState
     super.initState();
     authenticateToken();
+
     // cameraList=fetchCameras();
     // pollsList=fetchPolls();
     _requestCameraPermission();
@@ -444,7 +456,58 @@ class _UserPageState extends State<UserPage> {
             SliverToBoxAdapter(
               child:Column(
                 children: [
-                    bottomNavIndex==0?Container():
+                    bottomNavIndex==0 ?
+
+                    (username=="user")?
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: officeCameras.length,
+                        itemBuilder: (context,index){
+                          String item = officeCameras[index];
+
+
+                          return Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+                              child: GestureDetector(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10,vertical:20),
+                                    child: Text('\t${index+1}. Office Camera HF4G1$item',style: TextStyle(color:Colors.black),),
+                                  ),
+                                ),
+                                onTap: (){
+                                  String hlsUrl = 'http://117.248.105.198:8080/hls/HF4G1$item.m3u8';
+                                  setCameraStream('HF4G1$item');
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled:true,
+                                    enableDrag: true, // Set to true if you want drag functionality
+                                    builder: (BuildContext context){
+                                      return ClipRRect(
+                                          child: SizedBox(
+                                              height:getHeight(context)*0.45,
+                                              child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(0),
+                                                  child: Transform.rotate(
+                                                    angle:0,
+                                                    child:HlsStreamPlayer(url: hlsUrl),
+                                                  )
+                                              )
+                                          )
+                                      );
+                                    },
+                                  );
+                                },
+                              )
+                          );
+                        }
+                    ) : Container()
+                        :
                   Padding(
                       padding: const EdgeInsets.only(left: 24, right: 24, top: 14),
                       child: ClipRRect(
@@ -468,6 +531,9 @@ class _UserPageState extends State<UserPage> {
                         ),
                       ),
                     ),
+
+
+
                     FutureBuilder(
                         future:bottomNavIndex==1? cameraList:bottomNavIndex==2?pollsList:assignmentList,
                         builder: (context,snapshot){
@@ -499,27 +565,30 @@ class _UserPageState extends State<UserPage> {
 
                                         if (match != null) {
                                           String serialNumber = match.group(1)!.trim();
+                                          setCameraStream(serialNumber);
                                           String hlsUrl = 'http://117.248.105.198:8080/hls/$serialNumber.m3u8';
-                                          // String hlsUrl = 'blob:https://chandra.mhele.live/f3aa8032-8bfe-47af-9dcd-f7570398b936';
+
                                           showModalBottomSheet(
                                             context: context,
-                                            builder: (BuildContext context) {
-                                            return ClipRRect(
-                                              borderRadius: BorderRadius.circular(25),
-                                              child: Scaffold(
-                                                backgroundColor: Colors.white,
-                                                appBar: AppBar(
-                                                  backgroundColor: Colors.blue,
-                                                  foregroundColor: Colors.white,
-                                                  title: Text('CID : $serialNumber'),
-                                                  automaticallyImplyLeading: false,
-                                                ),
-                                                body: HlsStreamPlayer(url: hlsUrl),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      }
+                                            isScrollControlled:true,
+                                            enableDrag: true, // Set to true if you want drag functionality
+                                            builder: (BuildContext context){
+                                              return ClipRRect(
+                                                    child: SizedBox(
+                                                    height:getHeight(context)*0.45,
+                                                      child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(0),
+                                                      child: Transform.rotate(
+
+                                                        angle:0,
+                                                        child:HlsStreamPlayer(url: hlsUrl),
+                                                       )
+                                                      )
+                                                    )
+                                              );
+                                            },
+                                          );
+                                        }
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -544,7 +613,8 @@ class _UserPageState extends State<UserPage> {
                           }
 
                         }
-                    )
+                    ),
+
                 ],
               )
             ),
@@ -811,7 +881,6 @@ class _HlsStreamPlayerState extends State<HlsStreamPlayer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
       child: _controller.value.isInitialized
           ? AspectRatio(
             aspectRatio: _controller.value.aspectRatio,
