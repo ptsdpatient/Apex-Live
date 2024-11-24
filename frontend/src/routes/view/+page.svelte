@@ -152,43 +152,7 @@
     ]
 
 
-    function generateRandomStreamSats() {
-    // Generate random values
-    const onlineValue = Math.floor(Math.random() * 2500) + 500;  // Random value between 500 and 3000
-    const offlineValue = Math.floor(Math.random() * (3000 - onlineValue));  // Random value to fit within total limit
-    const inactiveValue = 3000 - (onlineValue + offlineValue);  // Remaining value to make the total 3000
-
-    // Create the array with a timestamp for each entry
-    const timestamp = new Date().toISOString();
-
-    let streamSats = [
-        {
-            name: "Total",
-            value: 3000,
-            timestamp: timestamp
-        },
-        {
-            name: "Online",
-            value: onlineValue,
-            timestamp: timestamp
-        },
-        {
-            name: "Offline",
-            value: offlineValue,
-            timestamp: timestamp
-        },
-        {
-            name: "Inactive",
-            value: inactiveValue,
-            timestamp: timestamp
-        }
-    ];
-
-    return streamSats;
-}
-
- 
-
+    
 
 
 
@@ -449,9 +413,6 @@ async function getInfo(){
 onMount(()=>{
     token=getToken()
     getInfo()
-    for(let i=0;i<15;i++){
-        randomStreamSats.push(generateRandomStreamSats())
-    }
     
 
 //     setTimeout(() => {
@@ -508,9 +469,16 @@ onMount(()=>{
         <div class="w-full h-full flex flex-col">
             <div class="w-full relative flex p-2 flex-row justify-between">
 
-                <button on:click={()=>openStatistics=false} class="p-2 rounded-lg absolute right-0 top-0 m-2 {lightMode?"hover:bg-gray-200 hover:shadow-gray-400":"hover:bg-gray-800 hover:shadow-gray-700"} transform hover:scale-105 duration-200 ease-in-out text-lg text-red-500">
-                    <img src="close.png" alt="">
-                </button>
+                <div class="w-full py-3 fixed top-0 left-0  z-50">
+                    <div class="w-full relative ">
+                        <div class="bg-gray-{lightMode?"200 border border-1 border-gray-300":"800 border border-1 border-gray-700"} py-5 shadow-sm shadow-gray-700 rounded-3xl w-1/2 mx-auto "></div>
+                        <button on:click={()=>openStatistics=false} class="p-2 rounded-lg absolute right-0 top-0 mr-4 {lightMode?"bg-gray-200 hover:bg-gray-100 hover:shadow-gray-400":"bg-gray-800 hover:bg-gray-700 hover:shadow-gray-700"} transform hover:scale-105 duration-200 ease-in-out text-lg z-70 text-red-500">
+                            <img src="close.png" alt="">
+                        </button>
+                    </div>
+                </div>
+
+                
 
                 <div class="w-full  p-5 mt-10 h-full flex flex-row ">
                     
@@ -537,28 +505,43 @@ onMount(()=>{
                             <div class="w-full mt-10 flex flex-row gap-10 justify-between">
                                 <div class="w-3/4 h-full flex flex-col my-auto  " >
                                     <div class="w-full h-full flex flex-row justify-end relative overflow-x-hidden {lightMode?"bg-gray-100":"bg-gray-800"} border border-1 {lightMode?"border-gray-300":"border-gray-700"}  items-center rounded-2xl" style="height:60vh;">
-                                            <div class="flex flex-col flex-reverse gap-3 text-center px-3 ">
-                                                {#each Array.from({ length: 10 }, (_, i) => i + 1) as number}
-                                                    <div>{number}</div>
-                                                {/each}
-                                            </div>
-                                            <div class="w-full flex flex-row h-full gap-4 pt-20 overflow-x-auto">
-                                                {#each randomStreamSats as items, index}
-                                                    <div class="flex flex-col h-full">
-                                                        <div class="flex flex-row h-full gap-1 m-1">
-                                                            {#each items as item, index1}
-                                                                <div class="h-full flex flex-col justify-end">
-                                                                    <div class="w-5 px-5  rounded-tr-lg rounded-tl-lg  bg-{item.name==="Total"?"blue":item.name==="Online"?"green":item.name==="Inactive"?"gray":"yellow"}-{lightMode?"500":"500"}" style="height:{(item.value/totalCameras)*100}%">
-                                                                    </div>
-                                                                </div>                                                    
-                                                            {/each}
-                                                            
-                                                        </div>
-                                                        <div class="w-full mx-auto text-center pb-2">
-                                                                1:00PM - 2:00PM
-                                                        </div>
+                                            
+                                            <div class="w-full flex flex-row h-full gap-4 pt-5 overflow-x-hidden">
+                                                <div class="flex flex-col-reverse justify-around h-full text-center px-3 ">
+                                                    <div class="w-full mx-auto text-center pb-2 text-transparent">0</div>
+                                                    {#each Array.from({ length: 10 }, (_, i) => i + 1) as number}
+                                                        <div>{number}</div>
+                                                    {/each}
+                                                </div>
+                                                
+                                                <div class="w-full h-full overflow-x-auto flex flex-row-reverse gap-5">
+                                                    <div class="w-full h-full px-20">
+
                                                     </div>
-                                                {/each}
+                                                    {#each randomStreamSats as items, index}
+                                                        <div class="flex flex-col h-full">
+                                                            
+                                                            <div class="flex flex-row h-full gap-1 m-1 ">
+                                                                {#each items as item, index1}
+                                                                    
+                                                                    <div class="h-full flex flex-col justify-end relative group">
+                                                                        
+                                                                        <div class="w-5 px-5 border border-{item.name==="Total"?"blue":item.name==="Online"?"green":item.name==="Inactive"?"gray":"yellow"}-500 rounded-tr-lg rounded-tl-lg  bg-{item.name==="Total"?"blue":item.name==="Online"?"green":item.name==="Inactive"?"gray":"yellow"}-400 text-{item.name==="Total"?"blue":item.name==="Online"?"green":item.name==="Inactive"?"gray":"yellow"}-{lightMode?"600":"400"}" style="height:{(item.value/totalCameras)*100}%">
+                                                                            <div class="absolute text-lg group-hover:flex hidden left-full rounded-lg p-3 bg-{lightMode?"white border border-1 border-gray-400 shadow-sm shadow-black":"gray-700  border border-2 border-gray-600 shadow-sm shadow-black"} ml-1 mt-10 z-30 whitespace-nowrap inline-block " style="bottom:{((item.value/totalCameras)*100)>70?70:((item.value/totalCameras)*100)<20?20:((item.value/totalCameras)*100)}%;">
+                                                                                ⬤ {item.name} : {Math.round(item.value)}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>                                                    
+                                                                {/each}
+                                                                
+                                                            </div>
+                                                            <div class="w-full mx-auto text-center pb-2">
+                                                                    1:00PM - 2:00PM
+                                                            </div>
+                                                        </div>
+                                                    {/each}
+                                          
+                                                </div>
                                             </div>
                                             
                                           <!-- </svg> -->
@@ -586,12 +569,12 @@ onMount(()=>{
                                     >
                                         <svg  
                                             class="mx-auto"
-                                            width="275" 
-                                            height="275" 
+                                            width="225" 
+                                            height="225" 
                                             
                                             viewBox="0 0 32 32" 
                                             style="border-radius:50%; transform: rotate(-90deg);">
-                                                <circle r="16" cx="16" cy="16" fill="transparent" stroke="#22C55E" stroke-width="16" 
+                                                <circle r="16" cx="16" cy="16" fill="transparent" stroke="#4ADE80" stroke-width="16" 
                                                         stroke-dasharray="{streamSats[1].value*100/streamSats[0].value} {100-streamSats[1].value*100/streamSats[0].value}" />
                                                 <circle r="16" cx="16" cy="16" fill="transparent" stroke="#FACC15" stroke-width="16"
                                                         stroke-dasharray="{streamSats[2].value*100/streamSats[0].value} {100-streamSats[2].value*100/streamSats[0].value}" stroke-dashoffset="{0-streamSats[1].value*100/streamSats[0].value}" />
