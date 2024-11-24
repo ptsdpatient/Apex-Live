@@ -476,9 +476,9 @@ onMount(()=>{
 
                 <div class="w-full py-3 fixed top-0 left-0  z-50">
                     <div class="w-full relative text-lg">
-                        <div class="flex flex-row justify-around bg-gray-{lightMode?"200 border border-1 border-gray-300":"800 border border-1 border-gray-700"} py-1 shadow-sm shadow-gray-700 rounded-3xl w-1/2 mx-auto ">
+                        <div class="flex flex-row justify-around bg-gray-{lightMode?"100 border border-1 border-gray-300":"800 border border-1 border-gray-700"} py-1 shadow-sm shadow-gray-700 rounded-3xl w-1/2 mx-auto ">
                             {#each panelButtons as btn}
-                                <button on:click={()=>{scrollToPanel(btn)}} class="px-5 py-1 rounded-2xl transition-all duration-200 transform hover:scale-105 hover:shadow-sm focus:outline-none hover:shadow-gray-900 hover:bg-gray-{lightMode?"100":"700"}">{btn}</button>
+                                <button on:click={()=>{scrollToPanel(btn)}} class="px-5 py-1 rounded-2xl transition-all duration-200 transform hover:scale-105 hover:shadow-sm focus:outline-none hover:shadow-gray-900 hover:bg-{lightMode?"white":"gray-700"}">{btn}</button>
                             {/each}
                         </div>
                         <button on:click={()=>openStatistics=false} class="focus:outline-none p-2 rounded-lg absolute right-0 top-0 mr-4 {lightMode?"bg-gray-200 hover:bg-gray-100 hover:shadow-gray-400":"bg-gray-800 hover:bg-gray-700 hover:shadow-gray-700"} transform hover:scale-105 duration-200 ease-in-out text-lg z-70 text-red-500">
@@ -505,7 +505,7 @@ onMount(()=>{
                                             Math.round((stat.name=="Online")?streamSats[1].value*100/streamSats[0].value:(stat.name=="Total")?100:(stat.name=="Inactive")?streamSats[3].value*100/streamSats[0].value:streamSats[2].value*100/streamSats[0].value)
                                             }%
                                         </div>
-                                        <div class="p-1 bg-{stat.name==="Total"?"blue":stat.name==="Online"?"green-400":stat.name==="Inactive"?"gray-300":"yellow-400"} rounded-lg">
+                                        <div class="p-1 bg-{stat.name==="Total"?"blue-500":stat.name==="Online"?"green-400":stat.name==="Inactive"?"gray-300":"yellow-400"} rounded-lg">
                                             <img class=" p-2" src="{stat.name}.png" alt="video">
                                         </div>
                                     </button>
@@ -587,7 +587,7 @@ onMount(()=>{
                                                         stroke-dasharray="{streamSats[1].value*100/streamSats[0].value} {100-streamSats[1].value*100/streamSats[0].value}" />
                                                 <circle r="16" cx="16" cy="16" fill="transparent" stroke="#FACC15" stroke-width="16"
                                                         stroke-dasharray="{streamSats[2].value*100/streamSats[0].value} {100-streamSats[2].value*100/streamSats[0].value}" stroke-dashoffset="{0-streamSats[1].value*100/streamSats[0].value}" />
-                                                <circle  r="16" cx="16" cy="16" fill="transparent" stroke="#CBD5E0" stroke-width="16"
+                                                <circle  r="16" cx="16" cy="16" fill="transparent" stroke="#9CA3AF" stroke-width="16"
                                                         stroke-dasharray="{streamSats[3].value*100/streamSats[0].value} {100-streamSats[3].value*100/streamSats[0].value}" stroke-dashoffset="{0-streamSats[1].value*100/streamSats[0].value-streamSats[2].value*100/streamSats[0].value}" />
                                                 
                                             </svg>                                 
