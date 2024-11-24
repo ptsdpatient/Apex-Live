@@ -502,7 +502,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const { rows } = await pool.query('SELECT id, pass, is_admin FROM employees WHERE full_name = $1', [name]);
+        const { rows } = await pool.query('SELECT id, pass, is_admin FROM users WHERE username = $1', [name]);
 
         if (rows.length === 0) {
             console.log('-> User not found with:', name);

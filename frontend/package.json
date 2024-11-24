@@ -19,8 +19,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"chart.js": "^4.4.6",
+		"chartjs-plugin-zoom": "^2.1.0",
 		"hls.js": "^1.5.15",
-		"sweetalert2": "^11.14.1",
-		"webrtc-adapter": "^9.0.1"
+		"sweetalert2": "^11.14.1"
 	}
 }

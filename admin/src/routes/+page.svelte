@@ -8,7 +8,7 @@
     // let url = `https://${link}/api`;
 
     async function authenticateToken() {
-        const token = localStorage.getItem('authToken'); 
+        const token = localStorage.getItem('apexLiveToken'); 
         if (!token) {
             window.location = '/login'; 
             return;

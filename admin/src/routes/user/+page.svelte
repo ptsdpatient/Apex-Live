@@ -74,7 +74,7 @@
 
 
     const getToken = () => {
-        return localStorage.getItem('authToken'); 
+        return localStorage.getItem('apexLiveToken'); 
     };
 
 

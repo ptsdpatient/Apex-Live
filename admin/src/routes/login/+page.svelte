@@ -26,7 +26,7 @@
 
             if (response.ok) {
                 // Store token in local storage
-                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('apexLiveToken', data.token);
                 window.location.href = '/user'; // Redirect to user page or dashboard
             } else {
                 alert(data.error || 'Login failed');

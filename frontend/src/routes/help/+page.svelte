@@ -36,7 +36,7 @@
             </div>
             
 
-            <a href="login"><button  class="mt-1 block w-full mx-auto px-3 py-2  rounded-md text-white transform hover:scale-105 duration-300 transition-all shadow-sm focus:outline-none focus:ring bg-blue-500 focus:ring-blue-500">Continue to Login page</button>
+            <a href="/"><button  class="mt-1 block w-full mx-auto px-3 py-2  rounded-md text-white transform hover:scale-105 duration-300 transition-all shadow-sm focus:outline-none focus:ring bg-blue-500 focus:ring-blue-500">Continue to Login page</button>
             </a>
 
  
